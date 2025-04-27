@@ -55,7 +55,28 @@ search_kwargs={"score_threshold": 0.2}
 
 llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
+# Step 1 - Identify Rules
+identify_prompt = PromptTemplate(
+input_variables=["rules", "input_code"],
+template="""
+You are an SAP ABAP Remediation Assistant.
 
+Context:
+{rules}
+
+Task:
+- Analyze the ECC ABAP code.
+- List applicable rules (Rule No and Error ABAP CODE line ).
+
+ECC ABAP Code:
+{input_code}
+
+Output:
+- Applicable Rules: [Rule 1: Line, Rule 2: Line, etc.]
+"""
+)
+identify_parser = StrOutputParser()
+identify_chain = identify_prompt | llm | identify_parser
 # Step 2 - Remediate Code
 remediate_prompt = PromptTemplate(
 input_variables=["applicable_rules", "input_code"],
@@ -96,9 +117,13 @@ class ABAPCodeInput(BaseModel):
 def remediate_abap_with_validation(input_code: str):
     # Retrieve Rules
     rules_text = "\n\n".join([doc.page_content for doc in docs])
-    applicable_rules = rules_text  # Define applicable_rules from rules_text
-
-    # Remediate Code
+    
+    # Identify Applicable Rules
+    applicable_rules = identify_chain.invoke({
+        "rules": rules_text,
+        "input_code": input_code
+    })
+# Remediate Code
     remediated_code = remediate_chain.invoke({
         "applicable_rules": applicable_rules,
         "input_code": input_code

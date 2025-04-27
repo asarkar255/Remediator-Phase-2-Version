@@ -91,6 +91,17 @@ TYPES: BEGIN OF ty_xfinal,    "Added By PwA  Rule 2
 DATA: gt_xfinal TYPE STANDARD TABLE OF ty_xfinal.  "Added By PwA  Rule 2
 DATA: gs_xfinal TYPE ty_xfinal.                    "Added By PwA  Rule 2
 
+example 3:
+
+input:
+
+DATA ifinal TYPE STANDARD TABLE OF ty_final WITH HEADER LINE.
+output:
+*DATA ifinal TYPE STANDARD TABLE OF ty_final WITH HEADER LINE.  "Commented By PwA  Rule 2
+DATA: gt_xfinal TYPE STANDARD TABLE OF ty_xfinal.  "Added By PwA  Rule 2
+DATA: gs_xfinal TYPE ty_xfinal.                    "Added By PwA  Rule 2
+
+
 Rule 3: 
 IF select * is provided in the input ABAP code like below.
 search for all the fields from the table from which data fetched and only those fields should be get selected.
