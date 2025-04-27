@@ -66,13 +66,13 @@ Context:
 
 Task:
 - Analyze the ECC ABAP code.
-- List applicable rules and total content of that rule defined along with examples (Rule No ,context, Error ABAP CODE line ).
-- Always fetch Rule 1 and its whole content from {rules} and add it at the starting of the output.
+- List applicable rules Rules details and Error ABAP Code in input_code a (Rule No and Rule Details and Error ABAP CODE line ).
+- Always fetch Rule 1 and its whole content from rules and add it at the starting of the output.
 ECC ABAP Code:
 {input_code}
 
 Output:
-- Applicable Rules: [Rule 1: content of rule : Line, Rule 2: content of rule: Line, etc.]
+- Applicable Rules: [Rule 1: Rule Details from rules : Line, Rule 2: Details from rules: Line, etc.]
 """
 )
 identify_parser = StrOutputParser()
