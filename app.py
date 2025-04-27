@@ -66,13 +66,13 @@ Context:
 
 Task:
 - Analyze the ECC ABAP code.
-- List applicable rules Rules details and Error ABAP Code in input_code a (Rule No and Rule Details and Error ABAP CODE line ).
+- List applicable rules (Rule No and Title).
 - Always fetch Rule 1 and its whole content from rules and add it at the starting of the output.
 ECC ABAP Code:
 {input_code}
 
 Output:
-- Applicable Rules: [Rule 1: Rule Details from rules : Line, Rule 2: Details from rules: Line, etc.]
+- - Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
 """
 )
 identify_parser = StrOutputParser()
@@ -85,8 +85,11 @@ You are an SAP ABAP Remediation Expert.
 
 Task:
 - Apply the following rules on the code.
+- Search Applicalble Rules in the Rules.
 - Comment out old code, insert new code.
 
+Rules:
+{Rules}
 Applicable Rules:
 {applicable_rules}
 
@@ -125,6 +128,7 @@ def remediate_abap_with_validation(input_code: str):
     })
 # Remediate Code
     remediated_code = remediate_chain.invoke({
+        "Rules": rules_text,
         "applicable_rules": applicable_rules,
         "input_code": input_code
     })
