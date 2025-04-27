@@ -67,7 +67,7 @@ Context:
 Task:
 - Analyze the ECC ABAP code.
 - List applicable rules (Rule No and Title).
-- Always fetch Rule 1 and its whole content from rules and add it at the starting of the output.
+- Dd not provide Remediated Abap Code.
 ECC ABAP Code:
 {input_code}
 
