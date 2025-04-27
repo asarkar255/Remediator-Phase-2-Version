@@ -1,18 +1,17 @@
 import os
 from fastapi import FastAPI
 from pydantic import BaseModel
-
+from langchain_core.output_parsers import StrOutputParser
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import TextLoader
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.document_loaders import TextLoader
+from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
-from langchain.chains import LLMChain
 from dotenv import load_dotenv
 load_dotenv()
 
-SECRET_KEY = os.getenv("ANTHROPIC_API_KEY")
+# SECRET_KEY = os.getenv("ANTHROPIC_API_KEY")
 os.environ["LANGCHAIN_TRACING_V2"]="true"
 os.environ["LANGCHAIN_API_KEY"]=os.getenv("LANGCHAIN_API_KEY")
 os.environ["OPENAI_API_KEY"]=os.getenv("OPENAI_API_KEY")
@@ -79,7 +78,8 @@ Output:
 ---
 """
 )
-remediate_chain = LLMChain(llm=llm, prompt=remediate_prompt)
+parser = StrOutputParser()
+remediate_chain = remediate_prompt | llm | parser
 
 
 # -----------------------------
@@ -99,7 +99,7 @@ def remediate_abap_with_validation(input_code: str):
     applicable_rules = rules_text  # Define applicable_rules from rules_text
 
     # Remediate Code
-    remediated_code = remediate_chain.run({
+    remediated_code = remediate_chain.invoke({
         "applicable_rules": applicable_rules,
         "input_code": input_code
     })

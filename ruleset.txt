@@ -1,6 +1,7 @@
 Rule 1: 
 Go through each and every rule on high priority.
 Only return Remediated Abap Code
+Prioritize LLM's ECC and S4 HANA ABAP knowledge above all
 'Rule 4' is getting missed in many Run please include that too.
 Always comment out the input abap code which is not relevant for S4HANA
 This is valid for all statement and code those are commented and added 
