@@ -1,61 +1,83 @@
-Rule 1: 
-Go through each and every rule on high priority.
-Only return Remediated Abap Code
-Prioritize LLM's ECC and S4 HANA ABAP knowledge above all
-'Rule 4' is getting missed in many Run please include that too.
-Always comment out the input abap code which is not relevant for S4HANA
-This is valid for all statement and code those are commented and added 
-Remediated part of code should be place just after the wrong code
-*DATA: BEGIN OF itab OCCURS 0 WITH HEADER LINE,   "Commented By PwA        
-*matnr TYPE matnr ,           
-*vbeln TYPE vbeln_d,         
-*END OF itab.
-TYPES: BEGIN OF ty_itab ,                            "Added By PwA
-matnr TYPE matnr ,           
-vbeln TYPE vbeln_d,         
-END OF ty_itab.
-Always add RUule Number After '"Commented By PwA ' and ' "Added By PwA '
-*DATA: BEGIN OF itab OCCURS 0 WITH HEADER LINE,   "Commented By PwA  Rule X      
-*matnr TYPE matnr ,           
-*vbeln TYPE vbeln_d,         
-*END OF itab.
-TYPES: BEGIN OF ty_itab ,                            "Added By PwA   Rule X
-matnr TYPE matnr ,           
-vbeln TYPE vbeln_d,         
-END OF ty_itab.
+Rule 1: General Remediation Instructions for ABAP Code
 
-Rule 2:
-if DATA is declared with DATA:BEGIN OF XXXX OCCURS 0 WITH HEADER LINE, 
-always transform it to TYPES:BEGIN OF itab, add internal table declaration with type 
-if with headr line specified then add 
-work area declarations with declared type 
-example 1:
-Data declared with DATA:BEGIN OF XXXX OCCURS 0 WITH HEADER LINE( XXXX is dynamic variables name )
-*DATA: BEGIN OF itab OCCURS 0 WITH HEADER LINE,   "Commented By PwA        
-*matnr TYPE matnr ,           
-*vbeln TYPE vbeln_d,         
-*END OF itab.
-we are replacing DATA:BEGIN OF XXXX OCCURS 0 WITH HEADER LINE with TYPES: BEGIN OF itab , 
-TYPES: BEGIN OF ty_itab ,                            "Added By PwA
-matnr TYPE matnr ,           
-vbeln TYPE vbeln_d,         
-END OF ty_itab.
-As With Header line is specified 
-declaring internal table
-DATA gt_itab TYPE STANDARD TABLE OF TY_ITAB
-Declare Workarea
-DATA gs_itab TYPE TY_ITAB
+Description:
+- Review and apply every rule with the highest priority.
+- Only return the remediated (corrected) ABAP code; do not return original/incorrect code without comments.
+- Prioritize LLM's knowledge of ECC and S/4 HANA ABAP standards above all.
+- Always comment out the original (non-S/4 HANA compliant) ABAP code.
+- This approach applies universally to all statements and codes that require remediation.
+- The remediated (corrected) code must be inserted immediately after the commented-out incorrect code.
+- Always include the Rule Number after the comment tags '"Commented By PwA' and '"Added By PwA'.
 
-example 2:
-input: 
+Example:
+
+Input (Original Code):
+DATA: BEGIN OF itab OCCURS 0 WITH HEADER LINE,
+        matnr TYPE matnr,
+        vbeln TYPE vbeln_d,
+      END OF itab.
+
+Output (Remediated Code):
+*DATA: BEGIN OF itab OCCURS 0 WITH HEADER LINE,   "Commented By PwA Rule X
+*        matnr TYPE matnr,
+*        vbeln TYPE vbeln_d,
+*END OF itab.
+
+TYPES: BEGIN OF ty_itab,                          "Added By PwA Rule X
+         matnr TYPE matnr,
+         vbeln TYPE vbeln_d,
+       END OF ty_itab.
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| Encounter legacy ABAP code incompatible with S/4 HANA | Comment the old code and add the remediated code immediately after |
+| Tagging | Always mention Rule Number in comments |
+
+Rule 2: Replace DATA Declaration with OCCURS 0 and HEADER LINE Using TYPES and Separate Work Area
+
+Description:
+- If a DATA declaration uses "BEGIN OF XXXX OCCURS 0 WITH HEADER LINE", replace it with:
+  - A TYPES structure for the line type.
+  - An internal table declaration using STANDARD/HASHED/INDEXED table without HEADER LINE.
+  - A separate work area declaration of the same TYPE.
+- Ensure transformation to modern ABAP standards for S/4 HANA compatibility.
+- Always comment out the original code and add the remediated version just after it.
+- Always include the Rule Number in the comments.
+
+Example 1:
+
+Input:
+DATA: BEGIN OF itab OCCURS 0 WITH HEADER LINE,
+        matnr TYPE matnr,
+        vbeln TYPE vbeln_d,
+      END OF itab.
+
+Output:
+*DATA: BEGIN OF itab OCCURS 0 WITH HEADER LINE,   "Commented By PwA  Rule 2
+*        matnr TYPE matnr,
+*        vbeln TYPE vbeln_d,
+*END OF itab.
+
+TYPES: BEGIN OF ty_itab,                            "Added By PwA  Rule 2
+         matnr TYPE matnr,
+         vbeln TYPE vbeln_d,
+       END OF ty_itab.
+
+DATA: gt_itab TYPE STANDARD TABLE OF ty_itab.       "Added By PwA  Rule 2
+DATA: gs_itab TYPE ty_itab.                         "Added By PwA  Rule 2
+
+Example 2:
+
+Input:
 DATA: BEGIN OF xmard OCCURS 0.
         INCLUDE STRUCTURE mard.
 DATA: END OF xmard.
 
-output:
-
+Output:
 *DATA: BEGIN OF xmard OCCURS 0.                "Commented By PwA  Rule 2
-        INCLUDE STRUCTURE mard.
+*        INCLUDE STRUCTURE mard.
 *DATA: END OF xmard.
 
 TYPES: BEGIN OF ty_xmard.                        "Added By PwA  Rule 2
@@ -64,62 +86,77 @@ TYPES: END OF ty_xmard.
 DATA: gt_xmard TYPE STANDARD TABLE OF ty_xmard.  "Added By PwA  Rule 2
 DATA: gs_xmard TYPE ty_xmard.                    "Added By PwA  Rule 2
 
-example 3:
-input: 
+Example 3:
+
+Input:
 DATA: BEGIN OF xfinal OCCURS 0,
-       bukrs like t001-bukrs,
-       belnr like bseg-belnr,
-       gjahr like bseg-gjahr,
-       buzei like bseg-buzei,
+       bukrs LIKE t001-bukrs,
+       belnr LIKE bseg-belnr,
+       gjahr LIKE bseg-gjahr,
+       buzei LIKE bseg-buzei,
       END OF xfinal.
 
-output:
+Output:
 *DATA: BEGIN OF xfinal OCCURS 0,   "Commented By PwA  Rule 2
-*       bukrs like t001-bukrs,
-*       belnr like bseg-belnr,
-*       gjahr like bseg-gjahr,
-*       buzei like bseg-buzei,
+*       bukrs LIKE t001-bukrs,
+*       belnr LIKE bseg-belnr,
+*       gjahr LIKE bseg-gjahr,
+*       buzei LIKE bseg-buzei,
 *      END OF xfinal.
 
 TYPES: BEGIN OF ty_xfinal,    "Added By PwA  Rule 2
-       bukrs type bukrs,
-       belnr type belnr_d,
-       gjahr type gjahr,
-       buzei type buzei ,
+       bukrs TYPE bukrs,
+       belnr TYPE belnr_d,
+       gjahr TYPE gjahr,
+       buzei TYPE buzei,
       END OF ty_xfinal.
 
 DATA: gt_xfinal TYPE STANDARD TABLE OF ty_xfinal.  "Added By PwA  Rule 2
 DATA: gs_xfinal TYPE ty_xfinal.                    "Added By PwA  Rule 2
 
-example 3:
+Example 4:
 
-input:
-
+Input:
 DATA ifinal TYPE STANDARD TABLE OF ty_final WITH HEADER LINE.
-output:
+
+Output:
 *DATA ifinal TYPE STANDARD TABLE OF ty_final WITH HEADER LINE.  "Commented By PwA  Rule 2
 DATA: gt_xfinal TYPE STANDARD TABLE OF ty_final.  "Added By PwA  Rule 2
 DATA: gs_xfinal TYPE ty_final.                    "Added By PwA  Rule 2
 
-example 4:
+Example 5:
 
-input:
-
+Input:
 DATA ifinal TYPE HASHED TABLE OF ty_final INITIAL SIZE 0 WITH HEADER LINE
 WITH UNIQUE KEY BUKRS BELNR.
-output:
+
+Output:
 *DATA ifinal TYPE HASHED TABLE OF ty_final INITIAL SIZE 0 WITH HEADER LINE
-WITH UNIQUE KEY BUKRS BELNR. "Commented By PwA  Rule 2
+WITH UNIQUE KEY BUKRS BELNR.  "Commented By PwA  Rule 2
 DATA: gt_xfinal TYPE HASHED TABLE OF ty_final WITH UNIQUE KEY BUKRS BELNR.  "Added By PwA  Rule 2
 DATA: gs_xfinal TYPE ty_final.                    "Added By PwA  Rule 2
 
-Rule 3: 
-IF select * is provided in the input ABAP code like below.
-search for all the fields from the table from which data fetched and only those fields should be get selected.
-From Rule 2 relevant declared internal table and workarea should be used.
-Internal table and where clause variables must be escaped usibg '@'
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| DATA declared with OCCURS 0 and HEADER LINE | Replace with TYPES, separate internal table, and work area |
+| Type of Table | Preserve original type (STANDARD, HASHED, etc.) while removing HEADER LINE |
+| Tagging | Always mention Rule Number in comments |
+
+Rule 3: Replace SELECT * with Explicit Field Selection
+
+Description:
+- If SELECT * is found in the input ABAP code:
+  - Identify all fields required from the database table.
+  - Explicitly list the necessary fields in the SELECT statement instead of using '*'.
+  - Use internal tables and work areas declared as per Rule 2.
+  - Always escape internal table and WHERE clause variables using '@' for S/4 HANA compatibility.
+- Comment out the original SELECT * code.
+- Add remediated code with explicit fields and modern syntax.
 
 Example 1:
+
 Input:
 Select *
   FROM bseg 
@@ -127,21 +164,21 @@ Select *
   WHERE belnr IN s_belnr[].
 
 Output:
-*Select *                     "Commented By PwA  
+*Select *                     "Commented By PwA  Rule 3
 *  FROM bseg 
 *  INTO TABLE ibseg[]
-*  WHERE belnr IN s_belnr[].  
+*  WHERE belnr IN s_belnr[].
 
-Select bukrs,belnr,koart 
+Select bukrs, belnr, koart 
   FROM bseg
   INTO CORRESPONDING FIELDS OF TABLE @gt_ibseg
   WHERE belnr IN @s_belnr.
 
 Example 2:
-Input:
 
+Input:
 Select *
-  FROM bseg 
+  FROM bkpf 
   INTO TABLE ibkpf[]
   WHERE belnr IN s_belnr[].
 IF ibkpf[] IS NOT INITIAL.
@@ -151,133 +188,326 @@ Select *
   FOR ALL ENTRIES IN ibkpf[]
   WHERE belnr IN s_belnr[].
 ENDIF.
+
 Output:
-*Select *                       "Commented By PwA
-*  FROM bseg 
+*Select *                       "Commented By PwA  Rule 3
+*  FROM bkpf 
 *  INTO TABLE ibkpf[]
 *  WHERE belnr IN s_belnr[].
 *IF ibkpf[] IS NOT INITIAL.
-*Select *                        "Commented By PwA
+*Select *                        "Commented By PwA  Rule 3
 *  FROM bseg 
 *  INTO TABLE ibseg[]
 *  FOR ALL ENTRIES IN ibkpf[]
 *  WHERE belnr IN s_belnr[].
 *ENDIF.
 
-Select bukrs,belnr                                   "Added By PwA
+Select bukrs, belnr                                   "Added By PwA  Rule 3
   FROM bkpf
   INTO CORRESPONDING FIELDS OF TABLE @gt_ibkpf
   WHERE belnr IN @s_belnr[].
 IF gt_ibkpf IS NOT INITIAL.
-Select bukrs,belnr,koart                              "Added By PwA
+Select bukrs, belnr, koart                              "Added By PwA  Rule 3
   FROM bseg
   INTO CORRESPONDING FIELDS OF TABLE @gt_ibseg
   WHERE belnr IN @s_belnr.
 ENDIF.
 
-Rule 4:
-IF 'MOVE' statement found in code it should be always replaced with '='
-Example:
+Summary Table:
 
-input: MOVE ls_mara-matnr TO ls_lips-matnr.
-output:
-*MOVE ls_mara-matnr TO ls_lips-matnr.   "Commented By PwA 
-ls_lips-matnr = ls_mara-matnr.          "Added By PwA
+| Scenario | Action |
+|:---------|:-------|
+| SELECT * found in ABAP Code | Replace with explicit fields |
+| Table & Work Area Usage | Use internal tables and work areas as per Rule 2 |
+| Escaping Variables | Always escape with '@' |
+| Commenting | Comment old SELECT * and add remediated version immediately after |
 
-input :
+Rule 4: Replace MOVE Statement with '=' Assignment Operator
 
-MOVE 'K - Consignment vendor' TO text004. 
+Description:
+- If a MOVE statement is found in the ABAP code:
+  - Always replace it with direct assignment using the '=' operator.
+- Comment out the original MOVE statement.
+- Add the remediated assignment immediately after the commented line.
+- Ensure the 'Commented By PwA' and 'Added By PwA' tags are appended with the appropriate Rule Number.
 
-output:
-*MOVE 'K - Consignment vendor' TO text004.  "Commented By PwA 
-text004 = 'K - Consignment vendor'.         "Added By PwA
-
-Rule 5:
-IF 'REFRESH' statement found in code it should be always replaced with 'CLEAR' statement
-
-Rule 6:
-IF 'PARAMETERS' statement found in code like below 
-PARAMETERS: p_vbeln LIKE lips-vbeln.
-We should search the table 'lips' in this case and field 'vbeln' to get the data element of that field
-output should be:
-
-*PARAMETERS: X_vbeln LIKE lips-vbeln. "Commented By PwA
-PARAMETERS: X_vbeln TYPE vbeln_vl.    "Added By PwA
-
-Rule 7A:
-IF 'TABLES' statement is found then it should be replaced with work area declaration
 Example 1:
-input: 
-TABLES: lips,mara.
-output:
-*TABLES: lips,mara.                   "Commented By PwA
-DATA gs_lips TYPE lips.               "Added By PwA
-DATA gs_mara TYPE mara.               "Added By PwA
 
-Rule 7B: 
-This rule is continuation of previous rule 'Rule 7A'.
-If 'SELECT-OPTIONS' statement found in code like below 
-SELECT-OPTIONS: X_matnr FOR mara-matnr.
-We should replace it with mara workare matnr field
-example:
-input:
-SELECT-OPTIONS: X_matnr FOR mara-matnr.
-output:
-*SELECT-OPTIONS: X_matnr FOR mara-matnr. "Commented By PwA
-SELECT-OPTIONS: X_matnr FOR gs_mara-matnr. "Added By PwA
+Input:
+MOVE ls_mara-matnr TO ls_lips-matnr.
 
-Rule 7C:
-After 'Rule 7A'  if Data variables are declared with reference of TABLES declared transform code like below Example 
-Example:
-input:
-TABLES: lips,mara.
+Output:
+*MOVE ls_mara-matnr TO ls_lips-matnr.   "Commented By PwA  Rule 4
+ls_lips-matnr = ls_mara-matnr.          "Added By PwA  Rule 4
+
+Example 2:
+
+Input:
+MOVE 'K - Consignment vendor' TO text004.
+
+Output:
+*MOVE 'K - Consignment vendor' TO text004.  "Commented By PwA  Rule 4
+text004 = 'K - Consignment vendor'.         "Added By PwA  Rule 4
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| MOVE statement used | Replace with direct '=' assignment |
+| Commenting | Always comment old MOVE statement and add new '=' assignment just after |
+| Tagging | Always mention Rule Number in comments |
+
+Rule 5: Replace REFRESH Statement with CLEAR Statement
+
+Description:
+- If a REFRESH statement is found in the ABAP code:
+  - Always replace it with a CLEAR statement.
+  - REFRESH is outdated for internal tables and is fully replaced by CLEAR in modern ABAP (especially for S/4HANA).
+- Comment out the original REFRESH statement.
+- Add the remediated CLEAR statement immediately after the commented line.
+- Use 'Commented By PwA' and 'Added By PwA' tags with the appropriate Rule Number.
+
+Example 1:
+
+Input:
+REFRESH lt_mara.
+
+Output:
+*REFRESH lt_mara.          "Commented By PwA  Rule 5
+CLEAR lt_mara.             "Added By PwA  Rule 5
+
+Example 2:
+
+Input:
+REFRESH: it_bseg, it_bkpf.
+
+Output:
+*REFRESH: it_bseg, it_bkpf. "Commented By PwA  Rule 5
+CLEAR it_bseg.              "Added By PwA  Rule 5
+CLEAR it_bkpf.              "Added By PwA  Rule 5
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| REFRESH statement found | Replace with CLEAR statement |
+| Commenting | Always comment old REFRESH and add new CLEAR statement just after |
+| Tagging | Always mention Rule Number in comments |
+
+Rule 6: Replace PARAMETERS with LIKE by PARAMETERS with TYPE using Data Element
+
+Description:
+- If a PARAMETERS statement uses LIKE to refer to a table-field (e.g., lips-vbeln):
+  - Search for the referenced table and field to find its Data Element.
+  - Replace LIKE with TYPE using the exact Data Element.
+- Comment out the original PARAMETERS statement.
+- Add the corrected PARAMETERS statement immediately after the commented line.
+- Use 'Commented By PwA' and 'Added By PwA' tags with the appropriate Rule Number.
+
+Example 1:
+
+Input:
+PARAMETERS: p_vbeln LIKE lips-vbeln.
+
+Output:
+*PARAMETERS: p_vbeln LIKE lips-vbeln. "Commented By PwA  Rule 6
+PARAMETERS: p_vbeln TYPE vbeln_vl.    "Added By PwA  Rule 6
+
+Example 2:
+
+Input:
+PARAMETERS: p_matnr LIKE mara-matnr.
+
+Output:
+*PARAMETERS: p_matnr LIKE mara-matnr. "Commented By PwA  Rule 6
+PARAMETERS: p_matnr TYPE matnr.       "Added By PwA  Rule 6
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| PARAMETERS using LIKE | Replace LIKE with TYPE and use correct Data Element |
+| Commenting | Always comment old PARAMETERS statement and add remediated TYPE version just after |
+| Tagging | Always mention Rule Number in comments |
+
+Rule 7A: Replace TABLES Statement with Work Area Declarations
+
+Description:
+- If a TABLES statement is found in the ABAP code:
+  - Replace each TABLES entry with a DATA statement that declares a work area of the same TYPE as the table.
+- Comment out the original TABLES statement.
+- Add a separate DATA work area declaration for each table.
+- Always use 'Commented By PwA' and 'Added By PwA' tags with the Rule Number.
+
+Example 1:
+
+Input:
+TABLES: lips, mara.
+
+Output:
+*TABLES: lips, mara.                   "Commented By PwA  Rule 7A
+DATA gs_lips TYPE lips.                "Added By PwA  Rule 7A
+DATA gs_mara TYPE mara.                "Added By PwA  Rule 7A
+
+Example 2:
+
+Input:
+TABLES: ekko.
+
+Output:
+*TABLES: ekko.                         "Commented By PwA  Rule 7A
+DATA gs_ekko TYPE ekko.                "Added By PwA  Rule 7A
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| TABLES statement found | Replace each with a DATA work area TYPE of that table |
+| Naming Convention | Prefix work area names with 'gs_' |
+| Commenting | Comment old TABLES statement and add corresponding DATA declarations immediately after |
+| Tagging | Always mention Rule Number in comments |
+
+Rule 7B: Adjust SELECT-OPTIONS to Use Work Area Field Instead of Table Field
+
+Description:
+- This rule is a continuation of Rule 7A.
+- If a SELECT-OPTIONS statement is found that directly references a table-field (e.g., mara-matnr):
+  - Replace the reference with the work area declared from Rule 7A (e.g., gs_mara-matnr).
+- Comment out the original SELECT-OPTIONS statement.
+- Add the corrected SELECT-OPTIONS statement immediately after the commented line.
+- Use 'Commented By PwA' and 'Added By PwA' tags with the Rule Number.
+
+Example 1:
+
+Input:
+SELECT-OPTIONS: X_matnr FOR mara-matnr.
+
+Output:
+*SELECT-OPTIONS: X_matnr FOR mara-matnr.   "Commented By PwA  Rule 7B
+SELECT-OPTIONS: X_matnr FOR gs_mara-matnr. "Added By PwA  Rule 7B
+
+Example 2:
+
+Input:
+SELECT-OPTIONS: X_bukrs FOR t001-bukrs.
+
+Output:
+*SELECT-OPTIONS: X_bukrs FOR t001-bukrs.   "Commented By PwA  Rule 7B
+SELECT-OPTIONS: X_bukrs FOR gs_t001-bukrs. "Added By PwA  Rule 7B
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| SELECT-OPTIONS referencing table field | Replace reference with work area field (gs_<table>-<field>) |
+| Commenting | Comment old SELECT-OPTIONS statement and add remediated version immediately after |
+| Tagging | Always mention Rule Number in comments |
+
+Rule 7C: Transform DATA Declarations Referencing TABLES to Use Data Elements
+
+Description:
+- After applying Rule 7A (replacing TABLES with work areas):
+  - If DATA variables are declared with TYPE referencing a table-field (e.g., mara-ersda, lips-vbeln),
+  - Replace the TYPE with the correct Data Element of that table-field.
+- Comment out both the original TABLES and such DATA statements.
+- Add corrected DATA declarations using appropriate Data Elements.
+- Always use 'Commented By PwA' and 'Added By PwA' tags with the Rule Number.
+
+Example 1:
+
+Input:
+TABLES: lips, mara.
 DATA lv_ersda TYPE mara-ersda.
 DATA lv_vbeln TYPE lips-vbeln.
 
-We should search the table  in this case and field  to get the data element of that field
-output should be:
-*TABLES: lips,mara.              "Commented By PwA
-*DATA lv_ersda TYPE mara-ersda.  "Commented By PwA
-*DATA lv_vbeln TYPE lips-vbeln.  "Commented By PwA
+Output:
+*TABLES: lips, mara.               "Commented By PwA  Rule 7C
+*DATA lv_ersda TYPE mara-ersda.     "Commented By PwA  Rule 7C
+*DATA lv_vbeln TYPE lips-vbeln.     "Commented By PwA  Rule 7C
 
-DATA lv_ersda TYPE ersda.         "Added By PwA
-DATA lv_vbeln TYPE vbeln_vl.        "Added By PwA
+DATA lv_ersda TYPE ersda.           "Added By PwA  Rule 7C
+DATA lv_vbeln TYPE vbeln_vl.         "Added By PwA  Rule 7C
 
-Rule 8:
+Example 2:
 
-If Variable declared with Keyword 'LIKE' always replace it with 'TYPE' keyword and search data element of reference 
-field and use the same 
+Input:
+TABLES: ekko.
+DATA lv_bukrs TYPE ekko-bukrs.
+
+Output:
+*TABLES: ekko.                      "Commented By PwA  Rule 7C
+*DATA lv_bukrs TYPE ekko-bukrs.      "Commented By PwA  Rule 7C
+
+DATA lv_bukrs TYPE bukrs.            "Added By PwA  Rule 7C
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| DATA declaration referencing a table-field (after TABLES removal) | Replace TYPE with the table-field's Data Element |
+| Commenting | Always comment old TABLES and DATA and add corrected DATA immediately after |
+| Tagging | Always mention Rule Number in comments |
+
+Rule 8: Replace LIKE with TYPE and Use Correct Data Element or Reference Structure
+
+Description:
+- If a DATA variable is declared using LIKE:
+  - Replace LIKE with TYPE.
+  - Search the referenced table-field or structure to find the correct Data Element or Structure name.
+- Comment out the original LIKE-based declaration.
+- Add the corrected TYPE-based declaration immediately after.
+- Always use 'Commented By PwA' and 'Added By PwA' tags with the Rule Number.
+
 Example 1:
-input:
+
+Input:
 DATA ls_mara LIKE mara.
-output:
-*DATA ls_mara LIKE mara. "Commented By PwA
 
-DATA ls_mara TYPE mara. "Added By PwA
+Output:
+*DATA ls_mara LIKE mara. "Commented By PwA  Rule 8
+DATA ls_mara TYPE mara.  "Added By PwA  Rule 8
 
-Example 2: 
-input:
+Example 2:
+
+Input:
 DATA lv_vbeln LIKE lips-vbeln.
-output:
-*DATA lv_vbeln LIKE lips-vbeln. "Commented By PwA
-DATA lv_vbeln TYPE vbeln_vl.    "Added By PwA
 
+Output:
+*DATA lv_vbeln LIKE lips-vbeln. "Commented By PwA  Rule 8
+DATA lv_vbeln TYPE vbeln_vl.    "Added By PwA  Rule 8
 
-Example 2: 
-input:
+Example 3:
+
+Input:
 DATA ls_bseg TYPE BSEG.
-DATA ls_doc  LIKE ls_bseg.
-output:
+DATA ls_doc LIKE ls_bseg.
+
+Output:
 DATA ls_bseg TYPE BSEG.
-*DATA ls_doc  LIKE ls_bseg.    "Commented By PwA
+*DATA ls_doc LIKE ls_bseg.       "Commented By PwA  Rule 8
+DATA ls_doc TYPE BSEG.           "Added By PwA  Rule 8
 
-DATA ls_doc TYPE BSEG.    "Added By PwA
+Summary Table:
 
-Rule 9:
+| Scenario | Action |
+|:---------|:-------|
+| Variable declared using LIKE | Replace LIKE with TYPE and use correct Data Element/Structure |
+| Commenting | Always comment old LIKE declaration and add new TYPE declaration |
+| Tagging | Always mention Rule Number in comments |
 
-If keyword 'MOVE-CORRESPONDING' found in the code always replace it with 'CORRESPONDING #( )'.
+
+Rule 9: Replace MOVE-CORRESPONDING with CORRESPONDING #( )
+
+Description:
+- If a MOVE-CORRESPONDING statement is found:
+  - Replace it with the modern ABAP expression CORRESPONDING #( source_structure ).
+- Comment out the original MOVE-CORRESPONDING statement.
+- Add the remediated CORRESPONDING #( ) assignment immediately after.
+- Always use 'Commented By PwA' and 'Added By PwA' tags with the Rule Number.
+
 Example 1:
-input:
+
+Input:
 DATA ls_bkpf TYPE BKPF,
      ls_bseg TYPE BSEG.
 
@@ -287,44 +517,112 @@ Output:
 DATA ls_bkpf TYPE BKPF,
      ls_bseg TYPE BSEG.
 
-*MOVE-CORRESPONDING ls_bkpf TO ls_bseg.  "Commented By PwA
- ls_bseg = CORRESPONDING #( ls_bkpf ).   "Added By PwA
+*MOVE-CORRESPONDING ls_bkpf TO ls_bseg.  "Commented By PwA  Rule 9
+ls_bseg = CORRESPONDING #( ls_bkpf ).    "Added By PwA  Rule 9
 
-RUle 10:
+Example 2:
 
-If keyword 'DESCRIBE TABLE' found in the code always replace it with 'lines( )'.
+Input:
+MOVE-CORRESPONDING gs_vbak TO gs_vbap.
+
+Output:
+*MOVE-CORRESPONDING gs_vbak TO gs_vbap.  "Commented By PwA  Rule 9
+gs_vbap = CORRESPONDING #( gs_vbak ).    "Added By PwA  Rule 9
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| MOVE-CORRESPONDING statement found | Replace with CORRESPONDING #( source_structure ) |
+| Commenting | Always comment old MOVE-CORRESPONDING and add corrected CORRESPONDING #( ) |
+| Tagging | Always mention Rule Number in comments |
+
+Rule 10: Replace DESCRIBE TABLE with lines( ) Expression
+
+Description:
+- If a DESCRIBE TABLE statement is found:
+  - Replace it with the modern ABAP expression: lines( <internal_table> ).
+- Comment out the original DESCRIBE TABLE statement.
+- Add the remediated assignment using lines( ) immediately after.
+- Always use 'Commented By PwA' and 'Added By PwA' tags with the Rule Number.
+
 Example 1:
-input:
-DATA:lt_mara TYPE STANDARD TABLE OF mara,
-     lv_line TYPE i.
+
+Input:
+DATA: lt_mara TYPE STANDARD TABLE OF mara,
+      lv_line TYPE i.
 
 DESCRIBE TABLE lt_mara LINES lv_line.
-output:
-DATA:lt_mara TYPE STANDARD TABLE OF mara,
-     lv_line TYPE i.
 
-*DESCRIBE TABLE lt_mara LINES lv_line. "Commented By PwA
- lv_line = lines(  lt_mara ).          "Added By PwA
+Output:
+DATA: lt_mara TYPE STANDARD TABLE OF mara,
+      lv_line TYPE i.
 
-Rule 11:
-If TABLE 'KONV' used in any selection Always Replace it with 'V_KONV'.
+*DESCRIBE TABLE lt_mara LINES lv_line.  "Commented By PwA  Rule 10
+lv_line = lines( lt_mara ).             "Added By PwA  Rule 10
+
+Example 2:
+
+Input:
+DESCRIBE TABLE lt_final LINES lv_count.
+
+Output:
+*DESCRIBE TABLE lt_final LINES lv_count.  "Commented By PwA  Rule 10
+lv_count = lines( lt_final ).             "Added By PwA  Rule 10
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| DESCRIBE TABLE found | Replace with assignment using lines( ) |
+| Commenting | Always comment old DESCRIBE TABLE and add lines( ) assignment |
+| Tagging | Always mention Rule Number in comments |
+
+
+Rule 11: Replace Table KONV with V_KONV in Selections
+
+Description:
+- If the database table KONV is used in a SELECT statement:
+  - Always replace KONV with V_KONV.
+- Comment out the original SELECT statement referencing KONV.
+- Add the remediated SELECT statement using V_KONV.
+- Always use 'Commented By PwA' and 'Added By PwA' tags with the Rule Number.
+
 Example 1:
-input:
+
+Input:
 SELECT knumv,
        kposn
   FROM KONV 
   INTO TABLE ...
-output:
-*SELECT knumv,   "Commented By PwA
+
+Output:
+*SELECT knumv,   "Commented By PwA  Rule 11
 *       kposn
 *  FROM KONV 
 *  INTO TABLE ...
 
-
 SELECT knumv,
        kposn
-  FROM V_KONV    "Added By PwA
+  FROM V_KONV    "Added By PwA  Rule 11
   INTO TABLE ...
+
+Example 2:
+
+Input:
+SELECT * FROM KONV INTO TABLE lt_konv WHERE knumv = '1000'.
+
+Output:
+*SELECT * FROM KONV INTO TABLE lt_konv WHERE knumv = '1000'.   "Commented By PwA  Rule 11
+SELECT * FROM V_KONV INTO TABLE lt_konv WHERE knumv = '1000'.   "Added By PwA  Rule 11
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| SELECT statement using KONV | Replace KONV with V_KONV |
+| Commenting | Always comment old SELECT on KONV and add corrected SELECT on V_KONV |
+| Tagging | Always mention Rule Number in comments |
      
 
 
