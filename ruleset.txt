@@ -328,11 +328,16 @@ SELECT knumv,
      
 
 
-Rule 12:
+Rule 12: Add ORDER BY or SORT After Database Selection
 
-IF there is not SORT on the TABLE after Database selection Add KEYWORD 'ORDER BY'.
-Example 1:
-Input:
+Description:
+- After a database SELECT INTO TABLE, if no SORT is performed on the internal table, ensure the selected data is ordered.
+- If the SELECT does NOT use FOR ALL ENTRIES, add an ORDER BY clause in the SELECT statement.
+- If the SELECT uses FOR ALL ENTRIES, do NOT use ORDER BY. Instead, add a SORT statement on the internal table after data retrieval.
+
+Example 1: No FOR ALL ENTRIES — Use ORDER BY
+
+Input (Original Code):
 SELECT knumv 
        kposn  
        stunr
@@ -340,76 +345,122 @@ SELECT knumv
  FROM  KONV
  INTO TABLE lt_KONV 
  WHERE KNUMV IN S_KNUMV.
- IF SY_SUBRC = 0.
-  
- ENDIF.
+IF sy-subrc = 0.
+ENDIF.
 
- output:
- *SELECT knumv     "Commented By PwA
- *      kposn  
- *      stunr
- *      zahek
- *FROM  KONV
- *INTO TABLE lt_KONV 
- *WHERE KNUMV IN S_KNUMV.
- *IF SY_SUBRC = 0.
-  
- *ENDIF.
+Output (Remediated Code):
+*SELECT knumv     "Commented By PwA Rule 12
+*      kposn  
+*      stunr
+*      zahek
+*FROM  KONV
+*INTO TABLE lt_KONV 
+*WHERE KNUMV IN S_KNUMV.
+*IF sy-subrc = 0.
+*ENDIF.
 
- SELECT knumv     
+SELECT knumv     
        kposn  
        stunr
        zahek
- FROM  V_KONV                          "Added By PwA
+ FROM  V_KONV                          "Added By PwA Rule 12
  INTO TABLE lt_KONV 
  WHERE KNUMV IN S_KNUMV
- ORDER BY knumv kposn stunr zahek.     "Added By PwA
- IF SY_SUBRC = 0.
-  
- ENDIF.
-In Case of 'FOR ALL ENTRIES' in the Database table selection 
- 'ORDER BY' Can not be used, Use Keyword 'SORT' .
- Example 2:
- input :
+ ORDER BY knumv kposn stunr zahek.      "Added By PwA Rule 12
+IF sy-subrc = 0.
+ENDIF.
 
+
+Example 2: With FOR ALL ENTRIES — Use SORT
+
+Input (Original Code):
 SELECT knumv 
        kposn  
        stunr
        zahek
  FROM  KONV
  INTO TABLE lt_KONV 
- FOR ALL ENTRIES  IN lt_final
+ FOR ALL ENTRIES IN lt_final
  WHERE stunr = lt_final-stunr
    AND KNUMV IN S_KNUMV.
- IF SY_SUBRC = 0.
-  
- ENDIF.
+IF sy-subrc = 0.
+ENDIF.
 
-output:
-*SELECT knumv                           "Commented By PwA
-*       kposn  
-*       stunr
-*       zahek
-* FROM  KONV
-* INTO TABLE lt_KONV 
-* FOR ALL ENTRIES  IN lt_final
-* WHERE stunr = lt_final-stunr
-*   AND KNUMV IN S_KNUMV.
-* IF SY_SUBRC = 0.
-*  " No Sort done after selection 
-* ENDIF.
+Output (Remediated Code):
+*SELECT knumv                           "Commented By PwA Rule 12
+*      kposn  
+*      stunr
+*      zahek
+*FROM  KONV
+*INTO TABLE lt_KONV 
+*FOR ALL ENTRIES IN lt_final
+*WHERE stunr = lt_final-stunr
+*  AND KNUMV IN S_KNUMV.
+*IF sy-subrc = 0.
+*ENDIF.
+
 SELECT knumv                               
        kposn  
        stunr
        zahek
- FROM  V_KONV                         "Added By PwA
+ FROM  V_KONV                          "Added By PwA Rule 12
  INTO TABLE lt_KONV 
- FOR ALL ENTRIES  IN lt_final
+ FOR ALL ENTRIES IN lt_final
  WHERE stunr = lt_final-stunr
    AND KNUMV IN S_KNUMV.
- IF SY_SUBRC = 0.
-  SORT lt_KONV BY knumv kposn stunr zahek.    "Added By PwA
- ENDIF.
+IF sy-subrc = 0.
+  SORT lt_KONV BY knumv kposn stunr zahek.    "Added By PwA Rule 12
+ENDIF.
+
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| Simple SELECT without FOR ALL ENTRIES | Add ORDER BY fields in SELECT statement |
+| SELECT with FOR ALL ENTRIES | After SELECT, add SORT on internal table |
+
+Rule 13: Replace READ TABLE on Internal Tables with Header Line by Using Work Areas
+
+Description:
+- If an internal table with a HEADER LINE is used with a READ TABLE statement, it must be modernized.
+- Create a proper TYPES structure and define an internal table and corresponding work area separately.
+- Use the work area explicitly in the READ TABLE statement to avoid outdated header-line usage.
+
+Example:
+
+Input (Original Code):
+DATA: BEGIN OF itab OCCURS 0,
+        matnr TYPE matnr,
+        werks TYPE werks_d,
+      END OF itab.
+
+READ TABLE itab WITH KEY matnr = '1000'.
+
+Output (Remediated Code):
+*TYPES: BEGIN OF ty_itab,                          "Commented By PwA Rule 13
+*         matnr TYPE matnr,
+*         werks TYPE werks_d,
+*       END OF ty_itab.
+*DATA: itab TYPE STANDARD TABLE OF ty_itab WITH DEFAULT KEY.
+*DATA: wa_itab TYPE ty_itab.
+*READ TABLE itab WITH KEY matnr = '1000'.
+
+TYPES: BEGIN OF ty_itab,                            "Added By PwA Rule 13
+         matnr TYPE matnr,
+         werks TYPE werks_d,
+       END OF ty_itab.
+DATA: lt_itab TYPE STANDARD TABLE OF ty_itab WITH DEFAULT KEY,   "Added By PwA Rule 13
+      wa_itab TYPE ty_itab.                                       "Added By PwA Rule 13
+
+READ TABLE lt_itab INTO wa_itab WITH KEY matnr = '1000'.          "Added By PwA Rule 13
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| READ TABLE on internal table with header line | Create a TYPES structure, define internal table and work area separately, and use READ TABLE INTO work area |
+
 
  Important Final Guidelines:
 - Maintain proper commenting and sequence.
