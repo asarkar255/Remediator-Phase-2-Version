@@ -759,7 +759,78 @@ Summary Table:
 |:---------|:-------|
 | READ TABLE on internal table with header line | Create a TYPES structure, define internal table and work area separately, and use READ TABLE INTO work area |
 
+Rule 14: ABAP Declarations Syntax and Formatting Rules
 
+A. TYPES Declaration:
+   - Always begin a TYPES block with "TYPES: BEGIN OF <type_name>,".
+   - Each field must end with a comma ',' (except the last field).
+   - End the block with "END OF <type_name>."
+   - Always terminate the TYPES block with a period '.' after END OF.
+   
+   Example:
+   TYPES: BEGIN OF ty_mara,
+            matnr TYPE matnr,
+            werks TYPE werks_d,
+            lgort TYPE lgort_d,
+          END OF ty_mara.
+
+B. DATA Declaration:
+   - For a structure or a single variable, declare as:
+     "DATA <variable_name> TYPE <type_name>."
+   - For internal tables, declare as:
+     "DATA <table_name> TYPE STANDARD TABLE OF <type_name> WITH DEFAULT KEY."
+   - End every DATA statement with a period '.'.
+
+   Example (Single Field):
+   DATA lv_matnr TYPE matnr.
+
+   Example (Internal Table):
+   DATA lt_mara TYPE STANDARD TABLE OF ty_mara WITH DEFAULT KEY.
+
+   Example (Work Area):
+   DATA ls_mara TYPE ty_mara.
+
+C. Comma Usage:
+   - Within a TYPES block, all field lines must end with a comma ','
+     except the final field before END OF.
+   - No comma ',' after END OF.
+
+D. Period Usage:
+   - Every ABAP statement must end with a period '.' (outside of TYPES field list).
+   - Mandatory after END OF, DATA, and standalone executable statements.
+
+E. Indentation and Formatting:
+   - Begin TYPES declaration at standard indentation.
+   - Indent fields inside TYPES block by 2 spaces or 1 tab.
+   - Indent multi-line DATA declarations properly for better readability.
+
+F. Naming Conventions (Best Practices):
+   - Prefix local variables with 'lv_' (e.g., lv_matnr).
+   - Prefix structures (single line) with 'ls_' (e.g., ls_mara).
+   - Prefix internal tables with 'lt_' (e.g., lt_mara).
+   - Prefix global variables with 'gv_' if needed.
+   - Prefix constants with 'gc_'.
+   - Prefix parameters with 'p_' or 's_' (for SELECT-OPTIONS).
+   - Prefix work areas derived from TABLES with 'gs_'.
+
+G. Additional Syntax Rules:
+   - Never mix declarations and operations; keep them in separate blocks.
+   - Always declare TYPES first, then DATA, then CONSTANTS (if any), before executable logic.
+   - Prefer explicit type references (TYPE) over implicit ones (LIKE).
+
+H. Standard Example:
+
+TYPES: BEGIN OF ty_employee,
+         empid TYPE empid,
+         name TYPE name1,
+         doj TYPE datum,
+       END OF ty_employee.
+
+DATA lt_employee TYPE STANDARD TABLE OF ty_employee WITH DEFAULT KEY.
+DATA ls_employee TYPE ty_employee.
+DATA lv_count TYPE i.
+
+CLEAR lt_employee.
  Important Final Guidelines:
 - Maintain proper commenting and sequence.
 - Always mention Rule number.
