@@ -34,7 +34,7 @@ chunk_overlap=0
 )
 docs = text_splitter.split_documents(documents)
 
-abap_exmpl_loader = TextLoader("ruleset.txt")
+abap_exmpl_loader = TextLoader("abap_program.txt")
 exmpl_abap = abap_exmpl_loader.load()
 
 # Split Rules into Chunks
