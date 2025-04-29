@@ -124,8 +124,8 @@ DATA ifinal TYPE STANDARD TABLE OF ty_final WITH HEADER LINE.
 
 Output:
 *DATA ifinal TYPE STANDARD TABLE OF ty_final WITH HEADER LINE.  "Commented By PwA  Rule 2
-DATA: gt_xfinal TYPE STANDARD TABLE OF ty_final.  "Added By PwA  Rule 2
-DATA: gs_xfinal TYPE ty_final.                    "Added By PwA  Rule 2
+DATA: gt_ifinal TYPE STANDARD TABLE OF ty_final.  "Added By PwA  Rule 2
+DATA: gs_ifinal TYPE ty_final.                    "Added By PwA  Rule 2
 
 Example 5:
 
@@ -136,8 +136,8 @@ WITH UNIQUE KEY BUKRS BELNR.
 Output:
 *DATA ifinal TYPE HASHED TABLE OF ty_final INITIAL SIZE 0 WITH HEADER LINE
 WITH UNIQUE KEY BUKRS BELNR.  "Commented By PwA  Rule 2
-DATA: gt_xfinal TYPE HASHED TABLE OF ty_final WITH UNIQUE KEY BUKRS BELNR.  "Added By PwA  Rule 2
-DATA: gs_xfinal TYPE ty_final.                    "Added By PwA  Rule 2
+DATA: gt_ifinal TYPE HASHED TABLE OF ty_final WITH UNIQUE KEY BUKRS BELNR.  "Added By PwA  Rule 2
+DATA: gs_ifinal TYPE ty_final.                    "Added By PwA  Rule 2
 
 Summary Table:
 
