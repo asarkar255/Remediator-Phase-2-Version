@@ -34,6 +34,19 @@ chunk_overlap=0
 )
 docs = text_splitter.split_documents(documents)
 
+abap_exmpl_loader = TextLoader("ruleset.txt")
+exmpl_abap = abap_exmpl_loader.load()
+
+# Split Rules into Chunks
+text_splitter2 = RecursiveCharacterTextSplitter(
+chunk_size=500,
+chunk_overlap=0
+)
+docs2 = text_splitter2.split_documents(exmpl_abap)
+
+
+total_docs = docs + docs2
+
 # Embeddings + ChromaDB
 persist_directory = "./chroma_db"
 embeddings = OpenAIEmbeddings()
@@ -119,7 +132,7 @@ class ABAPCodeInput(BaseModel):
 
 def remediate_abap_with_validation(input_code: str):
     # Retrieve Rules
-    rules_text = "\n\n".join([doc.page_content for doc in docs])
+    rules_text = "\n\n".join([doc.page_content for doc in total_docs])
     
     # Identify Applicable Rules
     applicable_rules = identify_chain.invoke({

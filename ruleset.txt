@@ -35,6 +35,9 @@ Summary Table:
 | Encounter legacy ABAP code incompatible with S/4 HANA | Comment the old code and add the remediated code immediately after |
 | Tagging | Always mention Rule Number in comments |
 
+
+---
+
 Rule 2: Replace DATA Declaration with OCCURS 0 and HEADER LINE Using TYPES and Separate Work Area
 
 Description:
@@ -144,6 +147,8 @@ Summary Table:
 | Type of Table | Preserve original type (STANDARD, HASHED, etc.) while removing HEADER LINE |
 | Tagging | Always mention Rule Number in comments |
 
+---
+
 Rule 3: Replace SELECT * with Explicit Field Selection
 
 Description:
@@ -222,6 +227,9 @@ Summary Table:
 | Escaping Variables | Always escape with '@' |
 | Commenting | Comment old SELECT * and add remediated version immediately after |
 
+
+---
+
 Rule 4: Replace MOVE Statement with '=' Assignment Operator
 
 Description:
@@ -256,6 +264,9 @@ Summary Table:
 | MOVE statement used | Replace with direct '=' assignment |
 | Commenting | Always comment old MOVE statement and add new '=' assignment just after |
 | Tagging | Always mention Rule Number in comments |
+
+
+---
 
 Rule 5: Replace REFRESH Statement with CLEAR Statement
 
@@ -294,6 +305,8 @@ Summary Table:
 | Commenting | Always comment old REFRESH and add new CLEAR statement just after |
 | Tagging | Always mention Rule Number in comments |
 
+---
+
 Rule 6: Replace PARAMETERS with LIKE by PARAMETERS with TYPE using Data Element
 
 Description:
@@ -329,6 +342,8 @@ Summary Table:
 | PARAMETERS using LIKE | Replace LIKE with TYPE and use correct Data Element |
 | Commenting | Always comment old PARAMETERS statement and add remediated TYPE version just after |
 | Tagging | Always mention Rule Number in comments |
+
+---
 
 Rule 7A: Replace TABLES Statement with Work Area Declarations
 
@@ -367,6 +382,8 @@ Summary Table:
 | Commenting | Comment old TABLES statement and add corresponding DATA declarations immediately after |
 | Tagging | Always mention Rule Number in comments |
 
+---
+
 Rule 7B: Adjust SELECT-OPTIONS to Use Work Area Field Instead of Table Field
 
 Description:
@@ -402,6 +419,8 @@ Summary Table:
 | SELECT-OPTIONS referencing table field | Replace reference with work area field (gs_<table>-<field>) |
 | Commenting | Comment old SELECT-OPTIONS statement and add remediated version immediately after |
 | Tagging | Always mention Rule Number in comments |
+
+---
 
 Rule 7C: Transform DATA Declarations Referencing TABLES to Use Data Elements
 
@@ -447,6 +466,8 @@ Summary Table:
 | DATA declaration referencing a table-field (after TABLES removal) | Replace TYPE with the table-field's Data Element |
 | Commenting | Always comment old TABLES and DATA and add corrected DATA immediately after |
 | Tagging | Always mention Rule Number in comments |
+
+---
 
 Rule 8: Replace LIKE with TYPE and Use Correct Data Element or Reference Structure
 
@@ -495,6 +516,7 @@ Summary Table:
 | Commenting | Always comment old LIKE declaration and add new TYPE declaration |
 | Tagging | Always mention Rule Number in comments |
 
+---
 
 Rule 9: Replace MOVE-CORRESPONDING with CORRESPONDING #( )
 
@@ -537,6 +559,8 @@ Summary Table:
 | Commenting | Always comment old MOVE-CORRESPONDING and add corrected CORRESPONDING #( ) |
 | Tagging | Always mention Rule Number in comments |
 
+---
+
 Rule 10: Replace DESCRIBE TABLE with lines( ) Expression
 
 Description:
@@ -578,6 +602,7 @@ Summary Table:
 | Commenting | Always comment old DESCRIBE TABLE and add lines( ) assignment |
 | Tagging | Always mention Rule Number in comments |
 
+---
 
 Rule 11: Replace Table KONV with V_KONV in Selections
 
@@ -624,7 +649,7 @@ Summary Table:
 | Commenting | Always comment old SELECT on KONV and add corrected SELECT on V_KONV |
 | Tagging | Always mention Rule Number in comments |
      
-
+---
 
 Rule 12: Add ORDER BY or SORT After Database Selection
 
@@ -718,6 +743,8 @@ Summary Table:
 | Simple SELECT without FOR ALL ENTRIES | Add ORDER BY fields in SELECT statement |
 | SELECT with FOR ALL ENTRIES | After SELECT, add SORT on internal table |
 
+---
+
 Rule 13: Replace READ TABLE on Internal Tables with Header Line by Using Work Areas
 
 Description:
@@ -758,6 +785,8 @@ Summary Table:
 | Scenario | Action |
 |:---------|:-------|
 | READ TABLE on internal table with header line | Create a TYPES structure, define internal table and work area separately, and use READ TABLE INTO work area |
+
+---
 
 Rule 14: ABAP Declarations Syntax and Formatting Rules
 
@@ -831,6 +860,8 @@ DATA ls_employee TYPE ty_employee.
 DATA lv_count TYPE i.
 
 CLEAR lt_employee.
+
+---
  Important Final Guidelines:
 - Maintain proper commenting and sequence.
 - Always mention Rule number.

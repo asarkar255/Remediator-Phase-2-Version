@@ -1,0 +1,39 @@
+####################################################################################################
+Example 1: Separate fields with ',' when TABLES and Other WHere clause variables are escaped with '@'
+#####################################################################################################
+
+Bad ABAP Code:
+SELECT matnr ersda FROM mara INTO TABLE lt_mara.
+
+Good ABAP Code:
+*SELECT * FROM mara INTO TABLE lt_mara. "Commented by PwA 
+SELECT matnr, ersda, pstat FROM mara INTO CORRESPONDING FIELDS OF TABLE @lt_mara. "Added by PwA 
+
+Why:
+Need to separate all selected fields with comma is TABLE and Other Variables in where clause is escaped with '@' 
+
+---
+
+####################################################################################################
+Example 1: Maintain Proper comma and Period while Remediating DATA to TYPES
+#####################################################################################################
+
+Bad ABAP Code:
+DATA:BEGIN OF ty_mara OCCURS 0.
+      INCLUDE STRUCTURE mara.  
+DATA:END OF ty_mara.
+
+
+Bad Remediated Code:    
+TYPES:BEGIN OF ty_mara,
+INCLUDE STRUCTURE mara,
+TYPES: END OF ty_mara.
+
+Good Remediated Code:
+
+TYPES:BEGIN OF ty_mara.
+INCLUDE STRUCTURE mara.
+TYPES:END OF ty_mara.
+
+why:
+Wrong Comma and Period cause syntax errors
