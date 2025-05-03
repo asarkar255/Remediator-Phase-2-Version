@@ -1,5 +1,5 @@
 ####################################################################################################
-Example 1: Separate fields with ',' when TABLES and Other WHere clause variables are escaped with '@'
+Rule Example 1: Separate fields with ',' when TABLES and Other WHere clause variables are escaped with '@'
 #####################################################################################################
 
 Bad ABAP Code:
@@ -15,7 +15,7 @@ Need to separate all selected fields with comma is TABLE and Other Variables in 
 ---
 
 ####################################################################################################
-Example 1: Maintain Proper comma and Period while Remediating DATA to TYPES
+Rule Example 2: Maintain Proper comma and Period while Remediating DATA to TYPES
 #####################################################################################################
 
 Bad ABAP Code:
