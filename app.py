@@ -45,7 +45,7 @@ chunk_overlap=0
 docs2 = text_splitter2.split_documents(exmpl_abap)
 
 
-total_docs = docs + docs2
+# total_docs = docs + docs2
 
 # Embeddings + ChromaDB
 persist_directory = "./chroma_db"
@@ -70,7 +70,7 @@ llm = ChatOpenAI(model="gpt-4o", temperature=0)
 
 # Step 1 - Identify Rules
 identify_prompt = PromptTemplate(
-input_variables=["rules", "input_code"],
+input_variables=["rules","input_code"],
 template="""
 You are an SAP ABAP Remediation Assistant.
 
@@ -100,11 +100,13 @@ Task:
 - Apply the following rules on the code.
 - Search Applicalble Rules in the Rules.
 - Comment out old code, insert new code.
-
+- Remediation Must adhere Example Rules Mentioned
 Rules:
 {Rules}
 Applicable Rules:
 {applicable_rules}
+Example Rules:
+{example_rules}
 
 ECC ABAP Code:
 {input_code}
@@ -132,8 +134,8 @@ class ABAPCodeInput(BaseModel):
 
 def remediate_abap_with_validation(input_code: str):
     # Retrieve Rules
-    rules_text = "\n\n".join([doc.page_content for doc in total_docs])
-    
+    rules_text = "\n\n".join([doc.page_content for doc in docs])
+    example_rules_text = "\n\n".join([doc.page_content for doc in docs2])
     # Identify Applicable Rules
     applicable_rules = identify_chain.invoke({
         "rules": rules_text,
@@ -143,6 +145,7 @@ def remediate_abap_with_validation(input_code: str):
     remediated_code = remediate_chain.invoke({
         "Rules": rules_text,
         "applicable_rules": applicable_rules,
+        "example_rules": example_rules_text,
         "input_code": input_code
     })
 
