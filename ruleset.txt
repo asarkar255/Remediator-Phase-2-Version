@@ -975,12 +975,14 @@ Description:
 - Always declare RANGES using explicit TYPE RANGE OF <data_element>.
 - Avoid legacy usage like RANGES <name> FOR <table-field> without type safety.
 - Properly define RANGES with DATA: <name> TYPE RANGE OF <data_element> for clarity and alignment with CDS & AMDP patterns.
+- Always declare a work area TYPE LINE OF <range_table> for use in LOOP and APPEND operations.
 
 Best Practices:
 - Replace:
   RANGES: r_matnr FOR mara-matnr.
   With:
   DATA: r_matnr TYPE RANGE OF matnr.
+  DATA: wa_matnr LIKE LINE OF r_matnr.
 
 - Also ensure SELECT statements using RANGES are escaped using '@' for variables.
 
@@ -992,6 +994,7 @@ RANGES: r_matnr FOR mara-matnr.
 Output:
 *RANGES: r_matnr FOR mara-matnr.                   "Commented By PwA  Rule 17
 DATA: r_matnr TYPE RANGE OF matnr.                 "Added By PwA  Rule 17
+DATA: wa_matnr LIKE LINE OF r_matnr.               "Added By PwA  Rule 17
 
 Example 2:
 
@@ -1002,13 +1005,31 @@ Output:
 *SELECT * FROM mara INTO TABLE lt_mara WHERE matnr IN r_matnr.     "Commented By PwA  Rule 17
 SELECT * FROM mara INTO TABLE lt_mara WHERE matnr IN @r_matnr.     "Added By PwA  Rule 17
 
+Example 3: LOOP + APPEND for RANGES
+
+Input:
+LOOP AT s_matnr INTO wa_matnr.
+  APPEND wa_matnr TO r_matnr.
+ENDLOOP.
+
+Output:
+*LOOP AT s_matnr INTO wa_matnr.                      "Commented By PwA  Rule 17
+*  APPEND wa_matnr TO r_matnr.                       "Commented By PwA  Rule 17
+*ENDLOOP.                                            "Commented By PwA  Rule 17
+
+LOOP AT s_matnr INTO DATA(ls_matnr).                "Added By PwA  Rule 17
+  APPEND ls_matnr TO r_matnr.                       "Added By PwA  Rule 17
+ENDLOOP.                                            "Added By PwA  Rule 17
+
 Summary Table:
 
 | Scenario | Action |
 |:---------|:-------|
 | RANGES using FOR table-field | Replace with DATA <name> TYPE RANGE OF <data_element> |
+| Work area usage for RANGES | Declare DATA <wa_name> LIKE LINE OF <range_table> |
 | SELECT using RANGES | Escape RANGES variable with '@' |
-| Commenting | Always comment old RANGES and add modern declaration with TYPE |
+| LOOP/APPEND for RANGES | Replace with modern DATA(...) inline syntax |
+| Commenting | Always comment old RANGES/LOOP/APPEND and add modern replacement |
 | Tagging | Always include Rule Number in comments |
 
 
