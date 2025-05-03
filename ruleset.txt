@@ -862,6 +862,156 @@ DATA lv_count TYPE i.
 CLEAR lt_employee.
 
 ---
+
+Rule 15: Handle MATNR Extension in S/4HANA System
+
+Description:
+- In S/4HANA, the material number field MATNR has been extended from 18 to 40 characters.
+- All data declarations, comparisons, and assignments involving MATNR must be updated accordingly.
+- Avoid using hardcoded character length (e.g., `C LENGTH 18`) for material numbers.
+- Always use TYPE matnr for MATNR-related variables to adapt automatically to the new length.
+
+Best Practices:
+- Use `TYPE matnr` instead of `TYPE C LENGTH 18` or `LIKE mara-matnr`.
+- Ensure alignment in structures, internal tables, and variables using MATNR.
+- Validate any custom logic relying on material number formatting or padding.
+
+Example 1:
+
+Input:
+DATA lv_matnr TYPE C LENGTH 18.
+
+Output:
+*DATA lv_matnr TYPE C LENGTH 18.         "Commented By PwA  Rule 15
+DATA lv_matnr TYPE matnr.                "Added By PwA  Rule 15
+
+Example 2:
+
+Input:
+TYPES: BEGIN OF ty_mat,
+         matnr TYPE c LENGTH 18,
+         maktx TYPE maktx,
+       END OF ty_mat.
+
+Output:
+*TYPES: BEGIN OF ty_mat,                 "Commented By PwA  Rule 15
+*         matnr TYPE c LENGTH 18,
+*         maktx TYPE maktx,
+*       END OF ty_mat.
+
+TYPES: BEGIN OF ty_mat,                  "Added By PwA  Rule 15
+         matnr TYPE matnr,
+         maktx TYPE maktx,
+       END OF ty_mat.
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| MATNR defined as C LENGTH 18 or LIKE | Replace with TYPE matnr |
+| Commenting | Comment old declarations and add corrected versions using matnr domain |
+| Compatibility | Ensures 40-character readiness for S/4HANA |
+
+---
+
+Rule 16: Replace ADD and SUBTRACT with Inline Arithmetic in S/4HANA
+
+Description:
+- In S/4HANA, usage of legacy arithmetic statements like ADD and SUBTRACT is discouraged.
+- Prefer using inline arithmetic with '=' assignment for better readability and performance.
+
+Best Practices:
+- Replace:
+  ADD a TO b.                =>  b = b + a.
+  SUBTRACT a FROM b.         =>  b = b - a.
+- Always comment out the old statement and insert the new inline operation after it.
+- Apply this across all numeric operations for consistency.
+
+Example 1: ADD
+
+Input:
+ADD lv_value TO lv_total.
+
+Output:
+*ADD lv_value TO lv_total.            "Commented By PwA  Rule 16
+lv_total = lv_total + lv_value.       "Added By PwA  Rule 16
+
+Example 2: SUBTRACT
+
+Input:
+SUBTRACT lv_discount FROM lv_price.
+
+Output:
+*SUBTRACT lv_discount FROM lv_price.  "Commented By PwA  Rule 16
+lv_price = lv_price - lv_discount.    "Added By PwA  Rule 16
+
+Example 3: Multiple ADDs
+
+Input:
+ADD lv_a TO lv_sum.
+ADD lv_b TO lv_sum.
+
+Output:
+*ADD lv_a TO lv_sum.                  "Commented By PwA  Rule 16
+lv_sum = lv_sum + lv_a.              "Added By PwA  Rule 16
+*ADD lv_b TO lv_sum.                  "Commented By PwA  Rule 16
+lv_sum = lv_sum + lv_b.              "Added By PwA  Rule 16
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| ADD found | Replace with b = b + a |
+| SUBTRACT found | Replace with b = b - a |
+| Commenting | Always comment original ADD/SUBTRACT and use inline assignment |
+| Tagging | Always include Rule Number in comments |
+
+---
+
+Rule 17: Use RANGES with Explicit TYPE Declaration in S/4HANA
+
+Description:
+- In S/4HANA, avoid using implicit RANGES type declarations without structure.
+- Always declare RANGES using explicit TYPE RANGE OF <data_element>.
+- Avoid legacy usage like RANGES <name> FOR <table-field> without type safety.
+- Properly define RANGES with DATA: <name> TYPE RANGE OF <data_element> for clarity and alignment with CDS & AMDP patterns.
+
+Best Practices:
+- Replace:
+  RANGES: r_matnr FOR mara-matnr.
+  With:
+  DATA: r_matnr TYPE RANGE OF matnr.
+
+- Also ensure SELECT statements using RANGES are escaped using '@' for variables.
+
+Example 1:
+
+Input:
+RANGES: r_matnr FOR mara-matnr.
+
+Output:
+*RANGES: r_matnr FOR mara-matnr.                   "Commented By PwA  Rule 17
+DATA: r_matnr TYPE RANGE OF matnr.                 "Added By PwA  Rule 17
+
+Example 2:
+
+Input:
+SELECT * FROM mara INTO TABLE lt_mara WHERE matnr IN r_matnr.
+
+Output:
+*SELECT * FROM mara INTO TABLE lt_mara WHERE matnr IN r_matnr.     "Commented By PwA  Rule 17
+SELECT * FROM mara INTO TABLE lt_mara WHERE matnr IN @r_matnr.     "Added By PwA  Rule 17
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| RANGES using FOR table-field | Replace with DATA <name> TYPE RANGE OF <data_element> |
+| SELECT using RANGES | Escape RANGES variable with '@' |
+| Commenting | Always comment old RANGES and add modern declaration with TYPE |
+| Tagging | Always include Rule Number in comments |
+
+
  Important Final Guidelines:
 - Maintain proper commenting and sequence.
 - Always mention Rule number.

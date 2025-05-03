@@ -3,7 +3,7 @@ Rule Example 1: Separate fields with ',' when TABLES and Other WHere clause vari
 #####################################################################################################
 
 Bad ABAP Code:
-SELECT matnr ersda FROM mara INTO TABLE lt_mara.
+SELECT * FROM mara INTO TABLE lt_mara.
 
 Good ABAP Code:
 *SELECT * FROM mara INTO TABLE lt_mara. "Commented by PwA 
