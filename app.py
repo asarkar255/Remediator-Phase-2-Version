@@ -28,7 +28,7 @@ documents = ruleset_loader.load()
 
 # Split Rules into Chunks
 text_splitter = RecursiveCharacterTextSplitter(
-separators=["\n\n", "Rule"],
+# separators=["\n\n", "Rule"],
 chunk_size=500,
 chunk_overlap=0
 )
