@@ -1032,6 +1032,52 @@ Summary Table:
 | Commenting | Always comment old RANGES/LOOP/APPEND and add modern replacement |
 | Tagging | Always include Rule Number in comments |
 
+---
+
+Rule 18: Replace LIKE LINE OF with TYPE LINE OF
+
+Description:
+- Avoid using 'LIKE LINE OF' to declare work areas from internal tables.
+- Always use the modern 'TYPE LINE OF' syntax for clarity and consistency.
+- This ensures type-safety and better readability, especially for S/4HANA and CDS-based development.
+- Also avoid referencing the internal table directly in declarations when a TYPE exists.
+
+Best Practices:
+- Replace:
+  DATA wa_matnr LIKE LINE OF it_matnr.
+  With:
+  DATA wa_matnr TYPE  ty_matnr.
+
+- Use structured TYPES and refer to internal table type consistently across modules.
+
+Example 1:
+
+Input:
+DATA wa_matnr LIKE LINE OF it_matnr.
+
+Output:
+*DATA wa_matnr LIKE LINE OF it_matnr.       "Commented By PwA  Rule 18
+DATA wa_matnr TYPE  ty_matnr.        "Added By PwA  Rule 18
+
+Example 2:
+
+Input:
+DATA: lt_mara TYPE STANDARD TABLE OF mara,
+      wa_mara LIKE LINE OF lt_mara.
+
+Output:
+DATA: lt_mara TYPE STANDARD TABLE OF mara.
+*DATA wa_mara LIKE LINE OF lt_mara.         "Commented By PwA  Rule 18
+DATA wa_mara TYPE mara.          "Added By PwA  Rule 18
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| Work area declared with LIKE LINE OF | Replace with TYPE LINE OF syntax |
+| Commenting | Comment old LIKE LINE OF declaration and add corrected TYPE LINE OF version |
+| Tagging | Always include Rule Number in comments |
+
 
  Important Final Guidelines:
 - Maintain proper commenting and sequence.
