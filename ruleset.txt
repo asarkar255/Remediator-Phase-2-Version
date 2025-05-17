@@ -1078,6 +1078,356 @@ Summary Table:
 | Commenting | Comment old LIKE LINE OF declaration and add corrected TYPE LINE OF version |
 | Tagging | Always include Rule Number in comments |
 
+---
+Rule 19: Replace CONDENSE Statement with condense( ) Functional Expression
+
+Description:
+- Instead of using the procedural CONDENSE statement, use the functional form condense( ) in S/4HANA and modern ABAP.
+- This enhances readability, enables inline operations, and supports expressions in VALUE, LOOP, and RETURN contexts.
+
+Best Practices:
+- Replace:
+  CONDENSE lv_string.
+  With:
+  lv_string = condense( lv_string ).
+
+- In expressions:
+  Use: lv_cleaned = condense( lv_raw ) directly inside assignments.
+
+Example 1:
+
+Input:
+CONDENSE lv_name.
+
+Output:
+*CONDENSE lv_name.                          "Commented By PwA  Rule 19
+lv_name = condense( lv_name ).             "Added By PwA  Rule 19
+
+Example 2:
+
+Input:
+DATA lv_result TYPE string.
+lv_result = lv_input.
+CONDENSE lv_result.
+
+Output:
+DATA lv_result TYPE string.
+lv_result = lv_input.
+*CONDENSE lv_result.                        "Commented By PwA  Rule 19
+lv_result = condense( lv_result ).         "Added By PwA  Rule 19
+
+
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| CONDENSE used as a statement | Replace with assignment using condense( ) |
+| Inline assignment or usage | Preferred for modern ABAP |
+| Commenting | Always comment the old CONDENSE and add corrected version |
+| Tagging | Always include Rule Number in comments |
+
+---
+Rule 20: Replace TRANSLATE TO UPPER/LOWER with to_upper( ) and to_lower( )
+
+Description:
+- In modern ABAP (S/4HANA), use the functional expressions `to_upper( )` and `to_lower( )` instead of the procedural `TRANSLATE ... TO UPPER/LOWER CASE`.
+- This enables expression-based programming and improves readability and performance.
+- Especially useful within VALUE, LOOP, and method calls.
+
+Best Practices:
+- Replace:
+  TRANSLATE lv_name TO UPPER CASE.
+  With:
+  lv_name = to_upper( lv_name ).
+
+  TRANSLATE lv_name TO LOWER CASE.
+  With:
+  lv_name = to_lower( lv_name ).
+
+Example 1: To Uppercase
+
+Input:
+TRANSLATE lv_matnr TO UPPER CASE.
+
+Output:
+*TRANSLATE lv_matnr TO UPPER CASE.        "Commented By PwA  Rule 20
+lv_matnr = to_upper( lv_matnr ).          "Added By PwA  Rule 20
+
+Example 2: To Lowercase
+
+Input:
+TRANSLATE lv_email TO LOWER CASE.
+
+Output:
+*TRANSLATE lv_email TO LOWER CASE.        "Commented By PwA  Rule 20
+lv_email = to_lower( lv_email ).          "Added By PwA  Rule 20
+
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| TRANSLATE TO UPPER CASE | Replace with to_upper( ) |
+| TRANSLATE TO LOWER CASE | Replace with to_lower( ) |
+| Inline assignments | Already compliant — no change needed |
+| Commenting | Comment old TRANSLATE and add corrected version |
+| Tagging | Always include Rule Number in comments |
+
+---
+
+Rule 21: Replace READ TABLE with line_exists( ) for Existence Checks
+
+Description:
+- When checking for the existence of a row in an internal table using `READ TABLE ... TRANSPORTING NO FIELDS`,
+  modern ABAP recommends using the `line_exists( )` expression.
+- It simplifies code, improves readability, and allows inline use within IF, CASE, and LOOP expressions.
+
+Best Practices:
+- Replace:
+  READ TABLE lt_table WITH KEY field = value TRANSPORTING NO FIELDS.
+  IF sy-subrc = 0.
+  With:
+  IF line_exists( lt_table[ field = value ] ).
+
+- This is purely for existence check. Use full `READ TABLE ... INTO` if you need data access.
+
+Example 1:
+
+Input:
+READ TABLE lt_mara WITH KEY matnr = lv_matnr TRANSPORTING NO FIELDS.
+IF sy-subrc = 0.
+  "Do something
+ENDIF.
+
+Output:
+*READ TABLE lt_mara WITH KEY matnr = lv_matnr TRANSPORTING NO FIELDS.   "Commented By PwA  Rule 21
+*IF sy-subrc = 0.                                                       "Commented By PwA  Rule 21
+IF line_exists( lt_mara[ matnr = lv_matnr ] ).                         "Added By PwA  Rule 21
+  "Do something
+ENDIF.
+
+Example 2: Nested Check
+
+Input:
+READ TABLE lt_vbak WITH KEY vbeln = lv_vbeln TRANSPORTING NO FIELDS.
+IF sy-subrc = 0 AND lv_flag = abap_true.
+  "logic
+ENDIF.
+
+Output:
+*READ TABLE lt_vbak WITH KEY vbeln = lv_vbeln TRANSPORTING NO FIELDS.   "Commented By PwA  Rule 21
+*IF sy-subrc = 0 AND lv_flag = abap_true.                                "Commented By PwA  Rule 21
+IF line_exists( lt_vbak[ vbeln = lv_vbeln ] ) AND lv_flag = abap_true.  "Added By PwA  Rule 21
+  "logic
+ENDIF.
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| READ TABLE ... TRANSPORTING NO FIELDS for existence check | Replace with line_exists( itab[ key = val ] ) |
+| Read with INTO work area | Keep using READ TABLE |
+| Commenting | Comment old READ + sy-subrc logic and replace with line_exists |
+| Tagging | Always include Rule Number in comments |
+---
+
+Rule 22: Replace Untyped FIELD-SYMBOLS TYPE ANY with Properly Typed FIELD-SYMBOLS
+
+Description:
+- In legacy ABAP, FIELD-SYMBOLS were often declared with TYPE ANY, which weakens type safety and code readability.
+- In S/4HANA and modern ABAP, always use explicit types with FIELD-SYMBOLS to ensure static type checking and clarity.
+- Use `TYPE <structure>` or find the referenced line type of <internal_tble> and write `TYPE  <internal_table>` when applicable.
+
+Best Practices:
+- Replace:
+  FIELD-SYMBOLS <fs> TYPE ANY.
+  With:
+  FIELD-SYMBOLS <fs> TYPE <actual_type>.
+
+Example 1: Structure Reference
+
+Input:
+FIELD-SYMBOLS <ls_mara> TYPE ANY.
+
+Output:
+*FIELD-SYMBOLS <ls_mara> TYPE ANY.              "Commented By PwA  Rule 22
+FIELD-SYMBOLS <ls_mara> TYPE mara.              "Added By PwA  Rule 22
+
+Example 2: Line of Internal Table
+
+Input:
+FIELD-SYMBOLS <fs_line> TYPE ANY.
+ASSIGN lt_mara[ 1 ] TO <fs_line>.
+
+Output:
+*FIELD-SYMBOLS <fs_line> TYPE ANY.              "Commented By PwA  Rule 22
+FIELD-SYMBOLS <fs_line> TYPE  mara.             "Added By PwA  Rule 22
+ASSIGN lt_mara[ 1 ] TO <fs_line>.
+
+Example 3: Using Declared TYPE
+
+Input:
+TYPES: BEGIN OF ty_data,
+         field1 TYPE i,
+         field2 TYPE string,
+       END OF ty_data.
+
+FIELD-SYMBOLS <fs_data> TYPE ANY.
+
+Output:
+TYPES: BEGIN OF ty_data,
+         field1 TYPE i,
+         field2 TYPE string,
+       END OF ty_data.
+
+*FIELD-SYMBOLS <fs_data> TYPE ANY.              "Commented By PwA  Rule 22
+FIELD-SYMBOLS <fs_data> TYPE ty_data.           "Added By PwA  Rule 22
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| FIELD-SYMBOLS TYPE ANY used | Replace with explicitly typed FIELD-SYMBOL declaration |
+| Reference to internal tables | Use TYPE LINE OF <table> |
+| Commenting | Always comment old TYPE ANY line and add typed version |
+| Tagging | Always include Rule Number in comments |
+
+---
+
+Rule 23: Replace CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT/OUTPUT' with Inline CONV or VALUE Logic
+
+Description:
+- In modern ABAP (especially S/4HANA), avoid using `CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'` and `'CONVERSION_EXIT_ALPHA_OUTPUT'`.
+- These are used for zero-padding (input) and stripping leading zeros (output) in fields like MATNR, KUNNR, etc.
+- Prefer using `CONV` with appropriate data types or string functions for better performance and readability.
+
+Best Practices:
+- For ALPHA = IN (zero-padding), use:
+  target = CONV matnr( source ).
+
+- For ALPHA = OUT (strip leading zeros), use:
+  target = |{ source ALPHA = OUT }| or simply apply string operations (e.g., `SHIFT` or `REPLACE`) when applicable.
+
+Example 1: ALPHA = IN
+
+Input:
+CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'
+  EXPORTING input  = lv_matnr
+  IMPORTING output = lv_matnr.
+
+Output:
+*CALL FUNCTION 'CONVERSION_EXIT_ALPHA_INPUT'                   "Commented By PwA  Rule 23
+*  EXPORTING input  = lv_matnr                                 "Commented By PwA  Rule 23
+*  IMPORTING output = lv_matnr.                                "Commented By PwA  Rule 23
+lv_matnr = CONV matnr( lv_matnr ).                             "Added By PwA  Rule 23
+
+Example 2: ALPHA = OUT
+
+Input:
+CALL FUNCTION 'CONVERSION_EXIT_ALPHA_OUTPUT'
+  EXPORTING input  = lv_matnr
+  IMPORTING output = lv_display.
+
+Output:
+*CALL FUNCTION 'CONVERSION_EXIT_ALPHA_OUTPUT'                  "Commented By PwA  Rule 23
+*  EXPORTING input  = lv_matnr                                 "Commented By PwA  Rule 23
+*  IMPORTING output = lv_display.                              "Commented By PwA  Rule 23
+lv_display = |{ lv_matnr ALPHA = OUT }|.                       "Added By PwA  Rule 23
+
+Example 3: Inline Output Removal
+
+Input:
+lv_text = lv_matnr.
+CALL FUNCTION 'CONVERSION_EXIT_ALPHA_OUTPUT'
+  EXPORTING input = lv_text
+  IMPORTING output = lv_text.
+
+Output:
+lv_text = lv_matnr.
+*CALL FUNCTION 'CONVERSION_EXIT_ALPHA_OUTPUT'                  "Commented By PwA  Rule 23
+*  EXPORTING input = lv_text                                   "Commented By PwA  Rule 23
+*  IMPORTING output = lv_text.                                 "Commented By PwA  Rule 23
+lv_text = |{ lv_text ALPHA = OUT }|.                           "Added By PwA  Rule 23
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| CALL FUNCTION for ALPHA = IN | Replace with CONV <domain>( var ) |
+| CALL FUNCTION for ALPHA = OUT | Replace with string template ALPHA = OUT or REPLACE SHIFT |
+| Commenting | Always comment full FUNCTION block and add simplified expression |
+| Tagging | Always include Rule Number in comments |
+
+---
+Rule 24: Comment Out Unused DATA, INTERNAL TABLES, FIELD SYMBOLS, and WORK AREAS
+
+Description:
+- In ABAP programs, any declared `DATA`, `FIELD-SYMBOLS`, `CONSTANTS`, `TYPES`, internal tables, or work areas 
+  that are not used anywhere in the program should be commented out.
+- This improves readability, reduces memory footprint, and helps avoid confusion in code maintenance and review.
+- The check should be based on static usage in the program (excluding dynamic usage or field-symbol dereferencing).
+
+Best Practices:
+- Detect all declarations that are not statically referenced in:
+  - Executable statements
+  - Control logic (IF, CASE, LOOP, READ, etc.)
+  - Method/function/module calls
+- Comment out these unused declarations with a clear tag.
+
+Example 1: Unused Local Variable
+
+Input:
+DATA lv_matnr TYPE matnr.
+" No usage in code
+
+Output:
+*DATA lv_matnr TYPE matnr.                      "Commented By PwA  Rule 24
+
+Example 2: Unused Internal Table
+
+Input:
+DATA lt_kna1 TYPE STANDARD TABLE OF kna1.
+" Not used anywhere
+
+Output:
+*DATA lt_kna1 TYPE STANDARD TABLE OF kna1.      "Commented By PwA  Rule 24
+
+Example 3: Unused FIELD-SYMBOLS
+
+Input:
+FIELD-SYMBOLS <fs_kna1> TYPE kna1.
+" Not assigned or dereferenced
+
+Output:
+*FIELD-SYMBOLS <fs_kna1> TYPE kna1.             "Commented By PwA  Rule 24
+
+Example 4: Unused Work Area
+
+Input:
+DATA ls_mara TYPE mara.
+" Not referenced anywhere
+
+Output:
+*DATA ls_mara TYPE mara.                        "Commented By PwA  Rule 24
+
+Example 5: Used Variables (no change)
+
+Input:
+DATA lv_matnr TYPE matnr.
+lv_matnr = '1000001'.
+
+(No change needed — variable is used)
+
+Summary Table:
+
+| Scenario | Action |
+|:---------|:-------|
+| Variable/Table/FS declared but never used | Comment out with tag |
+| Variable is used in code | Leave intact |
+| Dynamic usage or macro expansion | Should be handled with caution or optionally excluded |
+| Commenting | Always add "Commented By PwA  Rule 24" tag |
+
 
  Important Final Guidelines:
 - Maintain proper commenting and sequence.
