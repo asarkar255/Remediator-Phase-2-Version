@@ -8,7 +8,8 @@ Description:
 - This approach applies universally to all statements and codes that require remediation.
 - The remediated (corrected) code must be inserted immediately after the commented-out incorrect code.
 - Always include the Rule Number after the comment tags '"Commented By PwA' and '"Added By PwA'.
-
+- 'ORDER BY' rule No 12 is getting missed in your remediation everytime please include this on high priority.
+- 'INTO CORRESPONDING FIELDS OF TABLE' is missed in your remediation most of the time please include this on high priority.
 Example:
 
 Input (Original Code):
@@ -1583,8 +1584,8 @@ Best Practices:
   - Nested inside LOOP...ENDLOOP
   - Inside CASE...WHEN constructs
   - Used within FORM, METHOD, or FUNCTION blocks
-- Remove the ELSE block entirely if it has no purpose.
-- Add "Refactored By PwA  Rule 27" after refactoring for traceability.
+- Comment out the ELSE block entirely if it has no purpose.
+- Add "Commented By PwA  Rule 27" after refactoring for traceability.
 
 Example 1: ELSE Inside LOOP (Empty)
 
@@ -1600,7 +1601,8 @@ Output:
 LOOP AT lt_data INTO ls_data.
   IF ls_data-flag = abap_true.
     PERFORM process_flag.
-  ENDIF.                                          "Refactored By PwA  Rule 27
+*  ELSE.                                         "Commented By PwA  Rule 27
+  ENDIF.                                          
 ENDLOOP.
 
 Example 2: ELSE Inside LOOP with Only Comment
@@ -1618,7 +1620,9 @@ Output:
 LOOP AT lt_data INTO ls_data.
   IF ls_data-active = abap_true.
     CONTINUE.
-  ENDIF.                                          "Refactored By PwA  Rule 27
+*    ELSE.                                        "Commented By PwA  Rule 27
+*   Do nothing  
+  ENDIF.                                          
 ENDLOOP.
 
 Example 3: Valid ELSE block (No Change)
@@ -1647,7 +1651,8 @@ Output:
 IF lv_valid = abap_true.
   IF lv_ready = abap_true.
     lv_status = 'X'.
-  ENDIF.                                          "Refactored By PwA  Rule 27
+*  ELSE.  
+  ENDIF.                                          "Commented By PwA  Rule 27
 ENDIF.
 
 Summary Table:
