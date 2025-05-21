@@ -66,7 +66,7 @@ search_kwargs={"score_threshold": 0.2}
 # LangChain Chains Setup
 # -----------------------------
 
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
+llm = ChatOpenAI(model="gpt-4-turbo", temperature=0)
 
 # Step 1 - Identify Rules
 identify_prompt = PromptTemplate(
