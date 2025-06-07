@@ -3,11 +3,14 @@ Rule Example 1: Separate fields with ',' when TABLES and Other WHere clause vari
 #####################################################################################################
 
 Bad ABAP Code:
-SELECT * FROM mara INTO TABLE lt_mara.
+SELECT * FROM (table) INTO TABLE lt_table.
+-(table) is any SAP table
 
 Good ABAP Code:
-*SELECT * FROM mara INTO TABLE lt_mara. "Commented by PwA 
-SELECT matnr, ersda, pstat FROM mara INTO CORRESPONDING FIELDS OF TABLE @lt_mara. "Added by PwA 
+*SELECT * FROM (table) INTO TABLE lt_table. "Commented by PwA 
+SELECT (field1), (field2), (field3) FROM (table) INTO CORRESPONDING FIELDS OF TABLE @lt_table. "Added by PwA 
+
+(field1),(field2),(field3) are fields of the SAP table (table) (here table ia any SAP table)
 
 Why:
 Need to separate all selected fields with comma is TABLE and Other Variables in where clause is escaped with '@' 
