@@ -1731,6 +1731,44 @@ Summary Table:
 | Commenting or remediation tag                              | Add "Commented By PwA  Rule 28" / "Remediated ..." |
 
 ---
+Rule 29:
+
+Description:
+- Avoid using `SELECT SINGLE *` in ABAP as it reads all fields from the table, which is inefficient and may break if table structure changes.
+- Instead, select only required fields explicitly.
+- Also, use `INTO @DATA(...)` or `INTO @<work_area>` for modern and safe field assignment.
+
+Best Practices:
+- Identify the required fields and replace `*` with the field list.
+- Use inline declaration or properly typed work area for the selected record.
+
+Example 1:
+
+Input:
+SELECT SINGLE * FROM mara INTO wa_mara.
+
+Output:
+*SELECT SINGLE * FROM mara INTO wa_mara.  "Commented By PwA  Rule 29
+SELECT SINGLE matnr, ersda, mtart FROM mara INTO @wa_mara.  "Added By PwA  Rule 29
+
+Example 2:
+
+Input:
+SELECT SINGLE * FROM vbak INTO @DATA(ls_vbak).
+
+Output:
+*SELECT SINGLE * FROM vbak INTO @DATA(ls_vbak).  "Commented By PwA  Rule 29
+SELECT SINGLE vbeln, erdat, auart FROM vbak INTO @DATA(ls_vbak).  "Added By PwA  Rule 29
+
+Summary Table:
+
+| Scenario                      | Action                                               |
+|------------------------------|------------------------------------------------------|
+| `SELECT SINGLE *` usage      | Replace with specific fields                         |
+| INTO statement               | Use `INTO @DATA(...)` or typed work area            |
+| Commenting                   | Always comment original line and add modified one   |
+| Tagging                      | Always include Rule Number in comments              |
+
 
  Important Final Guidelines:
 - Maintain proper commenting and sequence.
