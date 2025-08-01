@@ -59,9 +59,8 @@ retriever = vectorstore.as_retriever(
 # -----------------------------
 
 llm = ChatOpenAI(
-    model="gpt-4o",         # ✅ GPT-4o supports 128K context
+    model="gpt-4.1",         # ✅ GPT-4o supports 128K context
     temperature=0,
-    max_tokens=32000        # ✅ Max output capacity
 )
 
 # Step 1 - Identify Rules
@@ -87,6 +86,7 @@ Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
 )
 identify_parser = StrOutputParser()
 identify_chain = identify_prompt | llm | identify_parser
+
 
 # Step 2 - Remediate Code
 remediate_prompt = PromptTemplate(
