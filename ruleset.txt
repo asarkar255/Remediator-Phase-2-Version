@@ -1,5 +1,9 @@
-Rule 1: General Remediation Instructions for ABAP Code
+***God Rule:
 
+Always return the full input code with remediation for all forms and subroutines, class , methods(Mandatory).
+Don't trim any code, just comment out the old code and insert the new code.
+
+Rule 1: General Remediation Instructions for ABAP Code
 Description:
 - Review and apply every rule with the highest priority.
 - Only return the remediated (corrected) ABAP code; do not return original/incorrect code without comments.
