@@ -95,7 +95,8 @@ remediate_prompt = PromptTemplate(
 input_variables=["applicable_rules", "input_code"],
 template="""
 You are an SAP ABAP Remediation Expert.
-
+We need the full remediated code for all forms and subroutines(Mandatory).
+Don't trim any code, just comment out the old code and insert the new code.
 Task:
 - Apply the following rules on the code.
 - Search Applicalble Rules in the Rules.
