@@ -145,19 +145,28 @@ def remediate_abap_with_validation(input_code: str):
         "input_code": input_code
     })
 
-    # Step 2: Remediate the code
-    remediated_code = remediate_chain.invoke({
-        "Rules": rules_text,
-        "applicable_rules": applicable_rules,
-        "example_rules": example_rules_text,
-        "input_code": input_code
-    })
+    lines = input_code.splitlines()
+    chunks = [lines[i:i+500] for i in range(0, len(lines), 500)]
 
-    # ✅ Optional: Save to file (for long ABAP outputs)
+    # Initialize result
+    full_output = ""
+
+    # Loop through each chunk and invoke LLM
+    for chunk_lines in chunks:
+        chunk_code = "\n".join(chunk_lines)
+        remediated_chunk = remediate_chain.invoke({
+            "Rules": rules_text,
+            "applicable_rules": applicable_rules,
+            "example_rules": example_rules_text,
+            "input_code": chunk_code
+        })
+        full_output += remediated_chunk  # ✅ Only append raw remediated code
+
+    # Save the final full output to file
     with open("remediated_output.abap", "w", encoding="utf-8") as f:
-        f.write(remediated_code)
+        f.write(full_output)
 
-    return {"remediated_code": remediated_code}
+    return {"remediated_code": full_output}
 
 # -----------------------------
 # FastAPI Endpoint
