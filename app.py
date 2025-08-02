@@ -81,7 +81,7 @@ identify_chain = identify_prompt | llm | StrOutputParser()
 
 remediate_prompt = PromptTemplate(
     # input_variables=["Rules", "applicable_rules", "example_rules", "input_code"],
-    input_variables=["applicable_rules",  "example_rules", "input_code"],
+    input_variables=["Rules",,  "example_rules", "input_code"],
     template="""
 You are an SAP ABAP Remediation Expert.
 Your task is to fully remediate all forms and subroutines in the ECC ABAP code.
@@ -96,7 +96,7 @@ Apply the following:
 - Ensure final output is complete and not trimmed.
 
 Rules:
-{applicable_rules}
+{rules}
 
 
 
