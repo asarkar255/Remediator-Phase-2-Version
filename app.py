@@ -56,28 +56,28 @@ retriever = vectorstore.as_retriever(
 # -----------------------------
 llm = ChatOpenAI(model="gpt-4.1", temperature=0)
 
-identify_prompt = PromptTemplate(
-    input_variables=["rules", "input_code"],
-    template="""
-You are an SAP ABAP Remediation Assistant.
+# identify_prompt = PromptTemplate(
+#     input_variables=["rules", "input_code"],
+#     template="""
+# You are an SAP ABAP Remediation Assistant.
 
-Context:
-{rules}
+# Context:
+# {rules}
 
-Task:
-- Analyze the ECC ABAP code.
-- List applicable rules (Rule No and Title).
-- Do not provide Remediated ABAP Code.
+# Task:
+# - Analyze the ECC ABAP code.
+# - List applicable rules (Rule No and Title).
+# - Do not provide Remediated ABAP Code.
 
-ECC ABAP Code:
-{input_code}
+# ECC ABAP Code:
+# {input_code}
 
-Output:
-Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
-"""
-)
+# Output:
+# Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
+# """
+# )
 
-identify_chain = identify_prompt | llm | StrOutputParser()
+# identify_chain = identify_prompt | llm | StrOutputParser()
 
 remediate_prompt = PromptTemplate(
     # input_variables=["Rules", "applicable_rules", "example_rules", "input_code"],
@@ -96,7 +96,7 @@ Apply the following:
 - Ensure final output is complete and not trimmed.
 
 Rules:
-{rules}
+{Rules}
 
 
 
