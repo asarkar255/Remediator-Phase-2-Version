@@ -2,6 +2,8 @@
 
 Always return the full input code with remediation for all forms and subroutines, class , methods(Mandatory).
 Don't trim any code, just comment out the old code and insert the new code.
+Don't Ommit REPORT {XXXXXXX} ( XXXXXXX = REPORT Name ) (Mandatory)
+Don't Ommit 'START_INCLUDE' and 'END_INCLIDE' (Mandatory)
 ----
 
 Rule 1: General Remediation Instructions for ABAP Code
