@@ -8,8 +8,10 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_chroma import Chroma
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
-from langchain.schema.runnable import RunnablePassthrough, RunnableWithMessageHistory
+from langchain.schema.runnable import RunnablePassthrough
+from langchain_core.runnables.history import RunnableWithMessageHistory
 from dotenv import load_dotenv
+
 
 load_dotenv()
 
