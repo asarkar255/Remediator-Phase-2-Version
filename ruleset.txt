@@ -75,7 +75,7 @@ TYPES: BEGIN OF ty_itab,                            "Added By PwA  Rule 2
          vbeln TYPE vbeln_d,
        END OF ty_itab.
 
-DATA: gt_itab TYPE STANDARD TABLE OF ty_itab.       "Added By PwA  Rule 2
+DATA: itab TYPE STANDARD TABLE OF ty_itab.       "Added By PwA  Rule 2
 DATA: gs_itab TYPE ty_itab.                         "Added By PwA  Rule 2
 
 Example 2:
@@ -93,7 +93,7 @@ Output:
 TYPES: BEGIN OF ty_xmard.                        "Added By PwA  Rule 2
         INCLUDE STRUCTURE mard.
 TYPES: END OF ty_xmard.
-DATA: gt_xmard TYPE STANDARD TABLE OF ty_xmard.  "Added By PwA  Rule 2
+DATA: xmard TYPE STANDARD TABLE OF ty_xmard.  "Added By PwA  Rule 2
 DATA: gs_xmard TYPE ty_xmard.                    "Added By PwA  Rule 2
 
 Example 3:
@@ -121,7 +121,7 @@ TYPES: BEGIN OF ty_xfinal,    "Added By PwA  Rule 2
        buzei TYPE buzei,
       END OF ty_xfinal.
 
-DATA: gt_xfinal TYPE STANDARD TABLE OF ty_xfinal.  "Added By PwA  Rule 2
+DATA: xfinal TYPE STANDARD TABLE OF ty_xfinal.  "Added By PwA  Rule 2
 DATA: gs_xfinal TYPE ty_xfinal.                    "Added By PwA  Rule 2
 
 Example 4:
@@ -131,7 +131,7 @@ DATA ifinal TYPE STANDARD TABLE OF ty_final WITH HEADER LINE.
 
 Output:
 *DATA ifinal TYPE STANDARD TABLE OF ty_final WITH HEADER LINE.  "Commented By PwA  Rule 2
-DATA: gt_ifinal TYPE STANDARD TABLE OF ty_final.  "Added By PwA  Rule 2
+DATA: ifinal TYPE STANDARD TABLE OF ty_final.  "Added By PwA  Rule 2
 DATA: gs_ifinal TYPE ty_final.                    "Added By PwA  Rule 2
 
 Example 5:
@@ -143,7 +143,7 @@ WITH UNIQUE KEY BUKRS BELNR.
 Output:
 *DATA ifinal TYPE HASHED TABLE OF ty_final INITIAL SIZE 0 WITH HEADER LINE
 WITH UNIQUE KEY BUKRS BELNR.  "Commented By PwA  Rule 2
-DATA: gt_ifinal TYPE HASHED TABLE OF ty_final WITH UNIQUE KEY BUKRS BELNR.  "Added By PwA  Rule 2
+DATA: ifinal TYPE HASHED TABLE OF ty_final WITH UNIQUE KEY BUKRS BELNR.  "Added By PwA  Rule 2
 DATA: gs_ifinal TYPE ty_final.                    "Added By PwA  Rule 2
 
 Summary Table:
@@ -183,7 +183,7 @@ Output:
 
 Select bukrs, belnr, koart 
   FROM bseg
-  INTO CORRESPONDING FIELDS OF TABLE @gt_ibseg
+  INTO CORRESPONDING FIELDS OF TABLE @ibseg
   WHERE belnr IN @s_belnr.
 
 Example 2:
@@ -216,12 +216,12 @@ Output:
 
 Select bukrs, belnr                                   "Added By PwA  Rule 3
   FROM bkpf
-  INTO CORRESPONDING FIELDS OF TABLE @gt_ibkpf
+  INTO CORRESPONDING FIELDS OF TABLE @ibkpf
   WHERE belnr IN @s_belnr[].
-IF gt_ibkpf IS NOT INITIAL.
+IF ibkpf IS NOT INITIAL.
 Select bukrs, belnr, koart                              "Added By PwA  Rule 3
   FROM bseg
-  INTO CORRESPONDING FIELDS OF TABLE @gt_ibseg
+  INTO CORRESPONDING FIELDS OF TABLE @ibseg
   WHERE belnr IN @s_belnr.
 ENDIF.
 
@@ -770,22 +770,22 @@ DATA: BEGIN OF itab OCCURS 0,
 READ TABLE itab WITH KEY matnr = '1000'.
 
 Output (Remediated Code):
-*TYPES: BEGIN OF ty_itab,                          "Commented By PwA Rule 13
-*         matnr TYPE matnr,
-*         werks TYPE werks_d,
-*       END OF ty_itab.
-*DATA: itab TYPE STANDARD TABLE OF ty_itab WITH DEFAULT KEY.
-*DATA: wa_itab TYPE ty_itab.
+                         
+*DATA: BEGIN OF itab OCCURS 0,"Commented By PwA Rule 13
+*        matnr TYPE matnr,
+*        werks TYPE werks_d,
+*      END OF itab.
+
 *READ TABLE itab WITH KEY matnr = '1000'.
 
 TYPES: BEGIN OF ty_itab,                            "Added By PwA Rule 13
          matnr TYPE matnr,
          werks TYPE werks_d,
        END OF ty_itab.
-DATA: lt_itab TYPE STANDARD TABLE OF ty_itab WITH DEFAULT KEY,   "Added By PwA Rule 13
-      wa_itab TYPE ty_itab.                                       "Added By PwA Rule 13
+DATA: lt_itab TYPE STANDARD TABLE OF ty_itab WITH DEFAULT KEY.   "Added By PwA Rule 13
 
-READ TABLE lt_itab INTO wa_itab WITH KEY matnr = '1000'.          "Added By PwA Rule 13
+
+READ TABLE lt_itab  INTO @DATA(wa_itab) WITH KEY matnr = '1000'.          "Added By PwA Rule 13
 
 Summary Table:
 
@@ -910,6 +910,7 @@ TYPES: BEGIN OF ty_mat,                  "Added By PwA  Rule 15
          matnr TYPE matnr,
          maktx TYPE maktx,
        END OF ty_mat.
+
 
 Summary Table:
 
