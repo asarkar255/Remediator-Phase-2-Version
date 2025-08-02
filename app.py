@@ -7,6 +7,8 @@ from langchain_community.document_loaders import TextLoader
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_chroma import Chroma
 from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationBufferMemory
+from langchain.schema.runnable import RunnablePassthrough, RunnableWithMessageHistory
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,13 +18,11 @@ os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-# Initialize FastAPI app
 app = FastAPI()
 
 # -----------------------------
-# Load and Split Knowledge Base
+# Load Knowledge Base
 # -----------------------------
-
 ruleset_loader = TextLoader("ruleset.txt")
 documents = ruleset_loader.load()
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
@@ -33,37 +33,28 @@ exmpl_abap = abap_exmpl_loader.load()
 text_splitter2 = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
 docs2 = text_splitter2.split_documents(exmpl_abap)
 
-# Merge rule and example documents
 all_docs = docs + docs2
 
 # -----------------------------
 # Embeddings + Vector Store
 # -----------------------------
-
 persist_directory = "./chroma_db"
 embeddings = OpenAIEmbeddings()
-
 vectorstore = Chroma.from_documents(
     documents=all_docs,
     embedding=embeddings,
     persist_directory=persist_directory
 )
-
 retriever = vectorstore.as_retriever(
     search_type="similarity_score_threshold",
     search_kwargs={"score_threshold": 0.2}
 )
 
 # -----------------------------
-# LangChain Prompt + LLM Setup
+# LLM and Prompts
 # -----------------------------
+llm = ChatOpenAI(model="gpt-4.1", temperature=0)
 
-llm = ChatOpenAI(
-    model="gpt-4.1",         # ✅ GPT-4o supports 128K context
-    temperature=0,
-)
-
-# Step 1 - Identify Rules
 identify_prompt = PromptTemplate(
     input_variables=["rules", "input_code"],
     template="""
@@ -84,11 +75,9 @@ Output:
 Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
 """
 )
-identify_parser = StrOutputParser()
-identify_chain = identify_prompt | llm | identify_parser
 
+identify_chain = identify_prompt | llm | StrOutputParser()
 
-# Step 2 - Remediate Code
 remediate_prompt = PromptTemplate(
     input_variables=["Rules", "applicable_rules", "example_rules", "input_code"],
     template="""
@@ -120,59 +109,60 @@ Output:
 [Remediated ABAP Code]
 """
 )
-remediate_parser = StrOutputParser()
-remediate_chain = remediate_prompt | llm | remediate_parser
 
 # -----------------------------
-# Pydantic Input Model
+# Memory-Enabled Runnable
 # -----------------------------
+memory = ConversationBufferMemory(return_messages=True)
 
+remediate_chain = RunnableWithMessageHistory(
+    remediate_prompt | llm | StrOutputParser(),
+    lambda session_id: memory,
+    input_messages_key="input_code",
+    history_messages_key="history"
+)
+
+# -----------------------------
+# Pydantic Input
+# -----------------------------
 class ABAPCodeInput(BaseModel):
     code: str
 
 # -----------------------------
-# Core Remediation Function
+# Core Function
 # -----------------------------
-
 def remediate_abap_with_validation(input_code: str):
-    # Get rules and examples as strings
     rules_text = "\n\n".join([doc.page_content for doc in docs])
     example_rules_text = "\n\n".join([doc.page_content for doc in docs2])
 
-    # Step 1: Identify applicable rules
     applicable_rules = identify_chain.invoke({
         "rules": rules_text,
         "input_code": input_code
     })
 
     lines = input_code.splitlines()
-    chunks = [lines[i:i+500] for i in range(0, len(lines), 500)]
+    chunks = [lines[i:i + 500] for i in range(0, len(lines), 500)]
 
-    # Initialize result
     full_output = ""
 
-    # Loop through each chunk and invoke LLM
     for chunk_lines in chunks:
         chunk_code = "\n".join(chunk_lines)
-        remediated_chunk = remediate_chain.invoke({
-            "Rules": rules_text,
-            "applicable_rules": applicable_rules,
-            "example_rules": example_rules_text,
-            "input_code": chunk_code
-        })
-        full_output += remediated_chunk  # ✅ Only append raw remediated code
-
-    # Save the final full output to file
-    with open("remediated_output.abap", "w", encoding="utf-8") as f:
-        f.write(full_output)
+        response = remediate_chain.invoke(
+            {
+                "Rules": rules_text,
+                "applicable_rules": applicable_rules,
+                "example_rules": example_rules_text,
+                "input_code": chunk_code
+            },
+            config={"configurable": {"session_id": "default"}}
+        )
+        full_output += response
 
     return {"remediated_code": full_output}
 
 # -----------------------------
 # FastAPI Endpoint
 # -----------------------------
-
 @app.post("/remediate_abap/")
 async def remediate_abap(input_data: ABAPCodeInput):
-    result = remediate_abap_with_validation(input_data.code)
-    return result
+    return remediate_abap_with_validation(input_data.code)
