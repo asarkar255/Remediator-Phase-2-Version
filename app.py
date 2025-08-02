@@ -56,32 +56,32 @@ retriever = vectorstore.as_retriever(
 # -----------------------------
 llm = ChatOpenAI(model="gpt-4.1", temperature=0)
 
-# identify_prompt = PromptTemplate(
-#     input_variables=["rules", "input_code"],
-#     template="""
-# You are an SAP ABAP Remediation Assistant.
+identify_prompt = PromptTemplate(
+    input_variables=["rules", "input_code"],
+    template="""
+You are an SAP ABAP Remediation Assistant.
 
-# Context:
-# {rules}
+Context:
+{rules}
 
-# Task:
-# - Analyze the ECC ABAP code.
-# - List applicable rules (Rule No and Title).
-# - Do not provide Remediated ABAP Code.
+Task:
+- Analyze the ECC ABAP code.
+- List applicable rules (Rule No and Title).
+- Do not provide Remediated ABAP Code.
 
-# ECC ABAP Code:
-# {input_code}
+ECC ABAP Code:
+{input_code}
 
-# Output:
-# Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
-# """
-# )
+Output:
+Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
+"""
+)
 
-# identify_chain = identify_prompt | llm | StrOutputParser()
+identify_chain = identify_prompt | llm | StrOutputParser()
 
 remediate_prompt = PromptTemplate(
     # input_variables=["Rules", "applicable_rules", "example_rules", "input_code"],
-    input_variables=["Rules",  "example_rules", "input_code"],
+    input_variables=["applicable_rules",  "example_rules", "input_code"],
     template="""
 You are an SAP ABAP Remediation Expert.
 Your task is to fully remediate all forms and subroutines in the ECC ABAP code.
@@ -96,7 +96,7 @@ Apply the following:
 - Ensure final output is complete and not trimmed.
 
 Rules:
-{Rules}
+{applicable_rules}
 
 
 
@@ -148,22 +148,27 @@ def remediate_abap_with_validation(input_code: str):
     # })
 
     lines = input_code.splitlines()
-    chunks = [lines[i:i + 700] for i in range(0, len(lines), 700)]
+    chunks = [lines[i:i + 1000] for i in range(0, len(lines), 1000)]
 
     full_output = ""
 
     for chunk_lines in chunks:
         chunk_code = "\n".join(chunk_lines)
-        response = remediate_chain.invoke(
+        
+    applicable_rules = identify_chain.invoke({
+        "rules": rules_text,
+        "input_code": input_code
+    })
+    response = remediate_chain.invoke(
             {
-                "Rules": rules_text,
-                # "applicable_rules": applicable_rules,
+                # "Rules": rules_text,
+                "applicable_rules": applicable_rules,
                 "example_rules": example_rules_text,
                 "input_code": chunk_code
             },
             config={"configurable": {"session_id": "default"}}
         )
-        full_output += response
+    full_output += response
 
     return {"remediated_code": full_output}
 
