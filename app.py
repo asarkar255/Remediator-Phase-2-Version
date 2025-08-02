@@ -157,7 +157,7 @@ def remediate_abap_with_validation(input_code: str):
         
     applicable_rules = identify_chain.invoke({
         "rules": rules_text,
-        "input_code": input_code
+        "input_code": chunk_code
     })
     response = remediate_chain.invoke(
             {
