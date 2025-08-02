@@ -7,11 +7,9 @@ from langchain_community.document_loaders import TextLoader
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_chroma import Chroma
 from langchain.prompts import PromptTemplate
-from langchain.memory import ConversationBufferMemory
-from langchain.schema.runnable import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.chat_history import ChatMessageHistory
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -78,6 +76,7 @@ Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
 """
 )
 
+
 identify_chain = identify_prompt | llm | StrOutputParser()
 
 remediate_prompt = PromptTemplate(
@@ -113,13 +112,18 @@ Output:
 )
 
 # -----------------------------
-# Memory-Enabled Runnable
+# Memory Management (New API)
 # -----------------------------
-memory = ConversationBufferMemory(return_messages=True)
+chat_histories = {}
+
+def memory_factory(session_id: str):
+    if session_id not in chat_histories:
+        chat_histories[session_id] = ChatMessageHistory()
+    return chat_histories[session_id]
 
 remediate_chain = RunnableWithMessageHistory(
     remediate_prompt | llm | StrOutputParser(),
-    lambda session_id: memory,
+    memory_factory,
     input_messages_key="input_code",
     history_messages_key="history"
 )
