@@ -4,61 +4,74 @@ from pydantic import BaseModel
 from langchain_core.output_parsers import StrOutputParser
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
 from langchain_chroma import Chroma
 from langchain.prompts import PromptTemplate
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.chat_history import BaseChatMessageHistory
-from langchain_core.chat_history import InMemoryChatMessageHistory
+from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
-
 load_dotenv()
 
-# Set environment variables
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+# SECRET_KEY = os.getenv("ANTHROPIC_API_KEY")
+os.environ["LANGCHAIN_TRACING_V2"]="true"
+os.environ["LANGCHAIN_API_KEY"]=os.getenv("LANGCHAIN_API_KEY")
+os.environ["OPENAI_API_KEY"]=os.getenv("OPENAI_API_KEY")
 
+# Initialize FastAPI app
 app = FastAPI()
 
 # -----------------------------
-# Load Knowledge Base
+# RAG Setup: Load Ruleset
 # -----------------------------
+
 ruleset_loader = TextLoader("ruleset.txt")
 documents = ruleset_loader.load()
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
+
+# Split Rules into Chunks
+text_splitter = RecursiveCharacterTextSplitter(
+# separators=["\n\n", "Rule"],
+chunk_size=500,
+chunk_overlap=0
+)
 docs = text_splitter.split_documents(documents)
 
 abap_exmpl_loader = TextLoader("abap_program.txt")
 exmpl_abap = abap_exmpl_loader.load()
-text_splitter2 = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=0)
+
+# Split Rules into Chunks
+text_splitter2 = RecursiveCharacterTextSplitter(
+chunk_size=500,
+chunk_overlap=0
+)
 docs2 = text_splitter2.split_documents(exmpl_abap)
 
-all_docs = docs + docs2
 
-# -----------------------------
-# Embeddings + Vector Store
-# -----------------------------
+# total_docs = docs + docs2
+
+# Embeddings + ChromaDB
 persist_directory = "./chroma_db"
 embeddings = OpenAIEmbeddings()
+
 vectorstore = Chroma.from_documents(
-    documents=all_docs,
-    embedding=embeddings,
-    persist_directory=persist_directory
+documents=docs,
+embedding=embeddings,
+persist_directory=persist_directory
 )
+
 retriever = vectorstore.as_retriever(
-    search_type="similarity_score_threshold",
-    search_kwargs={"score_threshold": 0.2}
+search_type="similarity_score_threshold",
+search_kwargs={"score_threshold": 0.2}
 )
 
 # -----------------------------
-# LLM and Prompts
+# LangChain Chains Setup
 # -----------------------------
-llm = ChatOpenAI(model="gpt-4.1", temperature=0)
 
+llm = ChatOpenAI(model="gpt-4.1-mini", temperature=0)
+
+# Step 1 - Identify Rules
 identify_prompt = PromptTemplate(
-    input_variables=["rules", "input_code"],
-    template="""
+input_variables=["rules","input_code"],
+template="""
 You are an SAP ABAP Remediation Assistant.
 
 Context:
@@ -67,39 +80,32 @@ Context:
 Task:
 - Analyze the ECC ABAP code.
 - List applicable rules (Rule No and Title).
-- Do not provide Remediated ABAP Code.
-
+- Dd not provide Remediated Abap Code.
 ECC ABAP Code:
 {input_code}
 
 Output:
-Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
+- - Applicable Rules: [Rule 1: Title, Rule 2: Title, etc.]
 """
 )
-
-identify_chain = identify_prompt | llm | StrOutputParser()
-
+identify_parser = StrOutputParser()
+identify_chain = identify_prompt | llm | identify_parser
+# Step 2 - Remediate Code
 remediate_prompt = PromptTemplate(
-    input_variables=["Rules", "applicable_rules", "example_rules", "input_code"],
-    template="""
+input_variables=["applicable_rules", "input_code"],
+template="""
 You are an SAP ABAP Remediation Expert.
-Your task is to fully remediate all forms and subroutines in the ECC ABAP code.
-DO NOT skip any section or write placeholders like "...rest is similar".
-Comment out old code and insert new code following clean S/4HANA standards.
-
-Apply the following:
-- Comment legacy TABLES, OCCURS, LIKE, etc.
-- Replace with DATA, TYPES, and modern SELECT.
-- Follow all remediation rules strictly.
-- Follow syntax and formatting exactly like examples.
-- Ensure final output is complete and not trimmed.
-
+We need the full remediated code for all forms and subroutines(Mandatory).
+Don't trim any code, just comment out the old code and insert the new code.
+Task:
+- Apply the following rules on the code.
+- Search Applicalble Rules in the Rules.
+- Comment out old code, insert new code.
+- Remediation Must adhere Example Rules Mentioned
 Rules:
 {Rules}
-
 Applicable Rules:
 {applicable_rules}
-
 Example Rules:
 {example_rules}
 
@@ -107,69 +113,51 @@ ECC ABAP Code:
 {input_code}
 
 Output:
+---
 [Remediated ABAP Code]
+---
 """
 )
+parser = StrOutputParser()
+remediate_chain = remediate_prompt | llm | parser
+
 
 # -----------------------------
-# Memory Management (Updated)
+# Pydantic Model
 # -----------------------------
-chat_histories = {}
 
-def memory_factory(session_id: str) -> BaseChatMessageHistory:
-    if session_id not in chat_histories:
-        chat_histories[session_id] = InMemoryChatMessageHistory()
-    return chat_histories[session_id]
-
-remediate_chain = RunnableWithMessageHistory(
-    remediate_prompt | llm | StrOutputParser(),
-    memory_factory,
-    input_messages_key="input_code",
-    history_messages_key="history"
-)
-# FastAPI application for ABAP code remediation
-
-# -----------------------------
-# Pydantic Input
-# -----------------------------
 class ABAPCodeInput(BaseModel):
     code: str
 
 # -----------------------------
-# Core Function
+# RAG Function
 # -----------------------------
+
 def remediate_abap_with_validation(input_code: str):
+    # Retrieve Rules
     rules_text = "\n\n".join([doc.page_content for doc in docs])
     example_rules_text = "\n\n".join([doc.page_content for doc in docs2])
-
+    # Identify Applicable Rules
     applicable_rules = identify_chain.invoke({
         "rules": rules_text,
         "input_code": input_code
     })
+# Remediate Code
+    remediated_code = remediate_chain.invoke({
+        "Rules": rules_text,
+        "applicable_rules": applicable_rules,
+        "example_rules": example_rules_text,
+        "input_code": input_code
+    })
 
-    lines = input_code.splitlines()
-    chunks = [lines[i:i + 500] for i in range(0, len(lines), 500)]
+    return {"remediated_code": remediated_code}
 
-    full_output = ""
-
-    for chunk_lines in chunks:
-        chunk_code = "\n".join(chunk_lines)
-        response = remediate_chain.invoke(
-            {
-                "Rules": rules_text,
-                "applicable_rules": applicable_rules,
-                "example_rules": example_rules_text,
-                "input_code": chunk_code
-            },
-            config={"configurable": {"session_id": "default"}}
-        )
-        full_output += response
-
-    return {"remediated_code": full_output}
 
 # -----------------------------
 # FastAPI Endpoint
 # -----------------------------
+
 @app.post("/remediate_abap/")
 async def remediate_abap(input_data: ABAPCodeInput):
-    return remediate_abap_with_validation(input_data.code)
+    result = remediate_abap_with_validation(input_data.code)
+    return result
