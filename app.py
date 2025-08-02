@@ -154,21 +154,17 @@ def remediate_abap_with_validation(input_code: str):
 
     for chunk_lines in chunks:
         chunk_code = "\n".join(chunk_lines)
-        
-    applicable_rules = identify_chain.invoke({
-        "rules": rules_text,
-        "input_code": chunk_code
-    })
-    response = remediate_chain.invoke(
-            {
-                # "Rules": rules_text,
-                "applicable_rules": applicable_rules,
+
+        response = remediate_chain.invoke(
+            { 
+                "Rules": rules_text,
+                # "applicable_rules": applicable_rules,
                 "example_rules": example_rules_text,
                 "input_code": chunk_code
             },
             config={"configurable": {"session_id": "default"}}
         )
-    full_output += response
+        full_output += response
 
     return {"remediated_code": full_output}
 
