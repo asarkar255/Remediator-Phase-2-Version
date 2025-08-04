@@ -148,7 +148,7 @@ def remediate_abap_with_validation(input_code: str):
     # })
 
     lines = input_code.splitlines()
-    chunks = [lines[i:i + 700] for i in range(0, len(lines), 700)]
+    chunks = [lines[i:i + 2000] for i in range(0, len(lines), 2000)]
 
     full_output = ""
 
