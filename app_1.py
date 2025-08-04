@@ -1,5 +1,4 @@
 import os
-import re
 from fastapi import FastAPI
 from pydantic import BaseModel
 from langchain_core.output_parsers import StrOutputParser
@@ -128,18 +127,6 @@ remediate_chain = RunnableWithMessageHistory(
     input_messages_key="input_code",
     history_messages_key="history"
 )
-
-import re
-
-def extract_global_declarations(remediated_code: str) -> str:
-    pattern = re.compile(
-        r"^\s*(DATA|TYPES|CONSTANTS|TABLES|PARAMETERS|SELECT-OPTIONS).*?\.\s*$",
-        re.IGNORECASE | re.MULTILINE
-    )
-    matches = pattern.findall(remediated_code)
-    lines = pattern.findall(remediated_code)
-    return "\n".join(lines)
-
 # FastAPI application for ABAP code remediation
 
 # -----------------------------
