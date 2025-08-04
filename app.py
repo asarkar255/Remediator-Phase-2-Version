@@ -132,12 +132,31 @@ remediate_chain = RunnableWithMessageHistory(
 
 
 def extract_global_declarations(remediated_code: str) -> str:
-    pattern = re.compile(
-        r"^\s*(DATA|TYPES|CONSTANTS|TABLES|PARAMETERS|SELECT-OPTIONS).*?\.\s*$",
-        re.IGNORECASE | re.MULTILINE
-    )
-    matches = pattern.finditer(remediated_code)
-    return "\n".join([match.group().strip() for match in matches])
+    lines = remediated_code.splitlines()
+    global_blocks = []
+    capture = False
+    block = ""
+
+    for line in lines:
+        stripped = line.strip().upper()
+        if any(stripped.startswith(start) for start in [
+            "DATA:", "TYPES:", "CONSTANTS:", "TABLES:", "PARAMETERS:", "SELECT-OPTIONS:"
+        ]):
+            capture = True
+            block = line
+            if stripped.endswith("."):
+                global_blocks.append(block)
+                block = ""
+                capture = False
+        elif capture:
+            block += "\n" + line
+            if stripped.endswith("."):
+                global_blocks.append(block)
+                block = ""
+                capture = False
+
+    return "\n\n".join(global_blocks)
+
 
 
 # FastAPI application for ABAP code remediation
