@@ -155,29 +155,32 @@ def remediate_abap_with_validation(input_code: str):
     rules_text = "\n\n".join([doc.page_content for doc in docs])
     example_rules_text = "\n\n".join([doc.page_content for doc in docs2])
 
-    # applicable_rules = identify_chain.invoke({
-    #     "rules": rules_text,
-    #     "input_code": input_code
-    # })
-
     lines = input_code.splitlines()
     chunks = [lines[i:i + 800] for i in range(0, len(lines), 800)]
 
     full_output = ""
+    global_context = ""
 
-    for chunk_lines in chunks:
+    for idx, chunk_lines in enumerate(chunks):
         chunk_code = "\n".join(chunk_lines)
 
+        if idx > 0 and global_context:
+            chunk_code = global_context + "\n\n" + chunk_code
+
         response = remediate_chain.invoke(
-            { 
+            {
                 "Rules": rules_text,
-                # "applicable_rules": applicable_rules,
                 "example_rules": example_rules_text,
                 "input_code": chunk_code
             },
             config={"configurable": {"session_id": "default"}}
         )
+
         full_output += response
+
+        # Extract context after first chunk
+        if idx == 0:
+            global_context = extract_global_declarations(response)
 
     return {"remediated_code": full_output}
 
