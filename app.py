@@ -55,7 +55,7 @@ retriever = vectorstore.as_retriever(
 # -----------------------------
 # LLM and Prompts
 # -----------------------------
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
+llm = ChatOpenAI(model="gpt-4.1", temperature=0)
 
 # identify_prompt = PromptTemplate(
 #     input_variables=["rules", "input_code"],
