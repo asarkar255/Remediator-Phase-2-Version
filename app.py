@@ -131,31 +131,57 @@ remediate_chain = RunnableWithMessageHistory(
 
 
 
+import re
+
 def extract_global_declarations(remediated_code: str) -> str:
+    """
+    Extracts global declarations such as DATA, TYPES, CONSTANTS, TABLES,
+    PARAMETERS, and SELECT-OPTIONS from a given ABAP code string.
+    Supports both colon (:) and non-colon style, and handles multiline blocks.
+    Comments are ignored.
+    Adds [GLOBAL_DATA_START] and [GLOBAL_DATA_END] markers.
+    """
     lines = remediated_code.splitlines()
     global_blocks = []
     capture = False
     block = ""
 
+    start_keywords = [
+        "DATA", "DATA:",
+        "TYPES", "TYPES:",
+        "CONSTANTS", "CONSTANTS:",
+        "TABLES", "TABLES:",
+        "PARAMETERS", "PARAMETERS:",
+        "SELECT-OPTIONS", "SELECT-OPTIONS:"
+    ]
+
     for line in lines:
-        stripped = line.strip().upper()
-        if any(stripped.startswith(start) for start in [
-            "DATA:", "TYPES:", "CONSTANTS:", "TABLES:", "PARAMETERS:", "SELECT-OPTIONS:"
-        ]):
+        stripped_line = line.strip()
+
+        # Skip commented or empty lines
+        if not stripped_line or stripped_line.startswith("*") or stripped_line.startswith('"'):
+            continue
+
+        upper_line = stripped_line.upper()
+
+        if any(upper_line.startswith(keyword) for keyword in start_keywords):
             capture = True
             block = line
-            if stripped.endswith("."):
-                global_blocks.append(block)
+            if upper_line.endswith("."):
+                global_blocks.append(block.strip())
                 block = ""
                 capture = False
         elif capture:
             block += "\n" + line
-            if stripped.endswith("."):
-                global_blocks.append(block)
+            if upper_line.endswith("."):
+                global_blocks.append(block.strip())
                 block = ""
                 capture = False
 
-    return "\n\n".join(global_blocks)
+    if not global_blocks:
+        return ""
+
+    return "[GLOBAL_DATA_START]\n" + "\n\n".join(global_blocks) + "\n[GLOBAL_DATA_END]"
 
 
 
