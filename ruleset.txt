@@ -1676,7 +1676,115 @@ Summary Table:
 | INTO statement               | Use `INTO @DATA(...)` or typed work area            |
 | Commenting                   | Always comment original line and add modified one   |
 | Tagging                      | Always include Rule Number in comments              |
+---
+Rule 30:(Mandatory)
 
+Description:
+- Avoid using `LOOP AT <itab>` as header lines are obsolete in S/4HANA.
+- Use inline data declarations and explicitly typed work areas for better readability and clean code.
+- Replace field references from `<itab>-field` to `<wa>-field` inside the loop.
+
+Best Practices:
+- Replace `LOOP AT <itab>` with `LOOP AT <itab> INTO DATA(<wa>)`.
+- Use meaningful inline variables (e.g., `ls_<name>`).
+- Update all field references inside the loop accordingly.
+- Always comment the original code and tag with rule number.
+
+Example 1:
+
+Input:
+LOOP AT it_mara.
+  WRITE: / it_mara-matnr.
+ENDLOOP.
+
+Output:
+*LOOP AT it_mara .  "Commented By PwA  Rule 30
+*  WRITE: / it_mara-matnr.  "Commented By PwA  Rule 30
+LOOP AT it_mara INTO DATA(ls_mara).  "Added By PwA  Rule 30
+  WRITE: / ls_mara-matnr.  "Updated By PwA  Rule 30
+ENDLOOP.
+
+Example 2:
+
+Input:
+LOOP AT it_vbak.
+  lv_auart = it_vbak-auart.
+  lv_vkorg = it_vbak-vkorg.
+ENDLOOP.
+
+Output:
+*LOOP AT it_vbak.  "Commented By PwA  Rule 30
+*  lv_auart = it_vbak-auart.  "Commented By PwA  Rule 30
+*  lv_vkorg = it_vbak-vkorg.  "Commented By PwA  Rule 30
+LOOP AT it_vbak INTO DATA(ls_vbak).  "Added By PwA  Rule 30
+  lv_auart = ls_vbak-auart.  "Updated By PwA  Rule 30
+  lv_vkorg = ls_vbak-vkorg.  "Updated By PwA  Rule 30
+ENDLOOP.
+
+Example 3:
+
+Input:
+LOOP AT it_vbak.
+  LOOP AT it_vbap WITH HEADER LINE.
+    WRITE: / it_vbak-vbeln, it_vbap-posnr.
+  ENDLOOP.
+ENDLOOP.
+
+Output:
+*LOOP AT it_vbak.  "Commented By PwA  Rule 30
+*  LOOP AT it_vbap WITH HEADER LINE.  "Commented By PwA  Rule 30
+*    WRITE: / it_vbak-vbeln, it_vbap-posnr.  "Commented By PwA  Rule 30
+*  ENDLOOP.
+*ENDLOOP.
+LOOP AT it_vbak INTO DATA(ls_vbak).  "Added By PwA  Rule 30
+  LOOP AT it_vbap INTO DATA(ls_vbap).  "Added By PwA  Rule 30
+    WRITE: / ls_vbak-vbeln, ls_vbap-posnr.  "Updated By PwA  Rule 30
+  ENDLOOP.
+ENDLOOP.
+
+Example 4:
+
+Input:
+LOOP AT it_data.
+  it_data-flag = 'X'.
+  MODIFY it_data.
+ENDLOOP.
+
+Output:
+*LOOP AT it_data.  "Commented By PwA  Rule 30
+*  it_data-flag = 'X'.  "Commented By PwA  Rule 30
+*  MODIFY it_data.  "Commented By PwA  Rule 30
+LOOP AT it_data INTO DATA(ls_data).  "Added By PwA  Rule 30
+  ls_data-flag = 'X'.  "Updated By PwA  Rule 30
+  MODIFY it_data FROM ls_data.  "Added By PwA  Rule 30
+ENDLOOP.
+
+Example 5:
+
+Input:
+CLEAR it_items.
+it_items-matnr = 'MAT01'.
+APPEND it_items.
+
+Output:
+*CLEAR it_items.  "Commented By PwA  Rule 30
+*it_items-matnr = 'MAT01'.  "Commented By PwA  Rule 30
+*APPEND it_items.  "Commented By PwA  Rule 30
+DATA(ls_items) = VALUE ty_items( matnr = 'MAT01' ).  "Added By PwA  Rule 30
+APPEND ls_items TO it_items.  "Added By PwA  Rule 30
+
+Summary Table:
+
+| Scenario                      | Action                                                        |
+|------------------------------|----------------------------------------------------------------|
+| `LOOP AT <itab>.` usage      | Replace with `LOOP AT <itab> INTO DATA(...)`          |
+| Field reference               | Replace `<itab>-field` with `<wa>-field`                     |
+| MODIFY usage                  | Replace with `MODIFY <itab> FROM <wa>`                       |
+| APPEND usage                  | Replace with `APPEND <wa> TO <itab>`                         |
+| Inline declaration            | Use `DATA(...)` or `VALUE(...)`                              |
+| Commenting                    | Always comment original line and add modified one            |
+| Tagging                       | Always include Rule Number in comments                       |
+---
 
  Important Final Guidelines:
 - Maintain proper commenting and sequence.
