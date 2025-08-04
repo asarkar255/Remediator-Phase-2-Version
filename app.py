@@ -1,5 +1,4 @@
 import os
-import re
 from fastapi import FastAPI
 from pydantic import BaseModel
 from langchain_core.output_parsers import StrOutputParser
@@ -128,63 +127,6 @@ remediate_chain = RunnableWithMessageHistory(
     input_messages_key="input_code",
     history_messages_key="history"
 )
-
-
-
-import re
-
-def extract_global_declarations(remediated_code: str) -> str:
-    """
-    Extracts global declarations such as DATA, TYPES, CONSTANTS, TABLES,
-    PARAMETERS, and SELECT-OPTIONS from a given ABAP code string.
-    Supports both colon (:) and non-colon style, and handles multiline blocks.
-    Comments are ignored.
-    Adds [GLOBAL_DATA_START] and [GLOBAL_DATA_END] markers.
-    """
-    lines = remediated_code.splitlines()
-    global_blocks = []
-    capture = False
-    block = ""
-
-    start_keywords = [
-        "DATA", "DATA:",
-        "TYPES", "TYPES:",
-        "CONSTANTS", "CONSTANTS:",
-        "TABLES", "TABLES:",
-        "PARAMETERS", "PARAMETERS:",
-        "SELECT-OPTIONS", "SELECT-OPTIONS:"
-    ]
-
-    for line in lines:
-        stripped_line = line.strip()
-
-        # Skip commented or empty lines
-        if not stripped_line or stripped_line.startswith("*") or stripped_line.startswith('"'):
-            continue
-
-        upper_line = stripped_line.upper()
-
-        if any(upper_line.startswith(keyword) for keyword in start_keywords):
-            capture = True
-            block = line
-            if upper_line.endswith("."):
-                global_blocks.append(block.strip())
-                block = ""
-                capture = False
-        elif capture:
-            block += "\n" + line
-            if upper_line.endswith("."):
-                global_blocks.append(block.strip())
-                block = ""
-                capture = False
-
-    if not global_blocks:
-        return ""
-
-    return "[GLOBAL_DATA_START]\n" + "\n\n".join(global_blocks) + "\n[GLOBAL_DATA_END]"
-
-
-
 # FastAPI application for ABAP code remediation
 
 # -----------------------------
@@ -200,32 +142,29 @@ def remediate_abap_with_validation(input_code: str):
     rules_text = "\n\n".join([doc.page_content for doc in docs])
     example_rules_text = "\n\n".join([doc.page_content for doc in docs2])
 
+    # applicable_rules = identify_chain.invoke({
+    #     "rules": rules_text,
+    #     "input_code": input_code
+    # })
+
     lines = input_code.splitlines()
     chunks = [lines[i:i + 800] for i in range(0, len(lines), 800)]
 
     full_output = ""
-    global_context = ""
 
-    for idx, chunk_lines in enumerate(chunks):
+    for chunk_lines in chunks:
         chunk_code = "\n".join(chunk_lines)
 
-        if idx > 0 and global_context:
-            chunk_code = global_context + "\n\n" + chunk_code
-
         response = remediate_chain.invoke(
-            {
+            { 
                 "Rules": rules_text,
+                # "applicable_rules": applicable_rules,
                 "example_rules": example_rules_text,
                 "input_code": chunk_code
             },
             config={"configurable": {"session_id": "default"}}
         )
-
         full_output += response
-
-        # Extract context after first chunk
-        if idx == 0:
-            global_context = extract_global_declarations(response)
 
     return {"remediated_code": full_output}
 
