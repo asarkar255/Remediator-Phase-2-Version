@@ -1,6 +1,5 @@
 import os
-from fastapi import FastAPI, Request
-from contextlib import asynccontextmanager
+from fastapi import FastAPI
 from pydantic import BaseModel
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
@@ -9,9 +8,35 @@ from langchain_chroma import Chroma
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 
+# Load env
 load_dotenv()
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY")
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+
+app = FastAPI()
+
+# -----------------------------
+# Memory-cache global variables
+# -----------------------------
+rules_text = ""
+example_rules_text = ""
+
+# -----------------------------
+# Load ruleset & example ABAP program ONCE at app startup
+# -----------------------------
+@app.on_event("startup")
+def load_ruleset_in_memory():
+    global rules_text, example_rules_text
+
+    # Load rules
+    ruleset_loader = TextLoader("ruleset.txt")
+    rules_docs = ruleset_loader.load()
+    rules_text = "\n\n".join([doc.page_content for doc in rules_docs])
+
+    # Load examples
+    example_loader = TextLoader("abap_program.txt")
+    example_docs = example_loader.load()
+    example_rules_text = "\n\n".join([doc.page_content for doc in example_docs])
 
 # -----------------------------
 # Define the model
@@ -52,32 +77,6 @@ Output:
 )
 
 # -----------------------------
-# Use lifespan instead of @on_event("startup")
-# -----------------------------
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("🚀 Loading ruleset and examples into memory...")
-
-    # Load rules once
-    ruleset_loader = TextLoader("ruleset.txt")
-    rules_docs = ruleset_loader.load()
-    app.state.rules_text = "\n\n".join([doc.page_content for doc in rules_docs])
-
-    # Load examples once
-    example_loader = TextLoader("abap_program.txt")
-    example_docs = example_loader.load()
-    app.state.example_rules_text = "\n\n".join([doc.page_content for doc in example_docs])
-
-    print("✅ Rules and examples loaded.")
-    yield
-    print("🛑 Shutting down app.")
-
-# -----------------------------
-# Initialize FastAPI with lifespan
-# -----------------------------
-app = FastAPI(lifespan=lifespan)
-
-# -----------------------------
 # Request Schema
 # -----------------------------
 class ABAPCodeInput(BaseModel):
@@ -87,7 +86,7 @@ class ABAPCodeInput(BaseModel):
 # -----------------------------
 # Main Remediation Logic
 # -----------------------------
-def remediate_abap_with_validation(input_code: str, global_variables: str, rules_text: str, example_rules_text: str):
+def remediate_abap_with_validation(input_code: str, global_variables: str):
     lines = input_code.splitlines()
     chunk_size = 600
     chunks = [lines[i:i + chunk_size] for i in range(0, len(lines), chunk_size)]
@@ -113,7 +112,5 @@ def remediate_abap_with_validation(input_code: str, global_variables: str, rules
 # FastAPI Endpoint
 # -----------------------------
 @app.post("/remediate_abap/")
-async def remediate_abap(input_data: ABAPCodeInput, request: Request):
-    rules_text = request.app.state.rules_text
-    example_rules_text = request.app.state.example_rules_text
-    return remediate_abap_with_validation(input_data.code, input_data.global_variables, rules_text, example_rules_text)
+async def remediate_abap(input_data: ABAPCodeInput):
+    return remediate_abap_with_validation(input_data.code, input_data.global_variables)
