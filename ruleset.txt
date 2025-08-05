@@ -1,4 +1,5 @@
 ***God Rule:
+Always Use `global_variables` as reference to do changes in code for DATA variables.(Mandatory)
 Always return the full input code with remediation for all forms and subroutines, class , methods(Mandatory).
 Don't trim any code, just comment out the old code and insert the new code.(Mandatory)
 Don't ommit lines for sake of brevity(Mandatory)
