@@ -81,7 +81,7 @@ llm = ChatOpenAI(model="gpt-4.1", temperature=0)
 
 remediate_prompt = PromptTemplate(
     # input_variables=["Rules", "applicable_rules", "example_rules", "input_code"],
-    input_variables=["Rules",  "example_rules", "input_code"],
+    input_variables=["Rules", "global_variables", "example_rules", "input_code"],
     template="""
 You are an SAP ABAP Remediation Expert.
 Your task is to fully remediate all forms and subroutines in the ECC ABAP code.
@@ -94,11 +94,12 @@ Apply the following:
 - Follow all remediation rules strictly.
 - Follow syntax and formatting exactly like examples.
 - Ensure final output is complete and not trimmed.
-
+- Always use global variables as defined in the input to follow the variables in the code.
 Rules:
 {Rules}
 
-
+global_variables:
+{global_variables}
 
 Example Rules:
 {example_rules}
@@ -134,11 +135,12 @@ remediate_chain = RunnableWithMessageHistory(
 # -----------------------------
 class ABAPCodeInput(BaseModel):
     code: str
+    global_variables: str
 
 # -----------------------------
 # Core Function
 # -----------------------------
-def remediate_abap_with_validation(input_code: str):
+def remediate_abap_with_validation(input_code: str, global_variables: str):
     rules_text = "\n\n".join([doc.page_content for doc in docs])
     example_rules_text = "\n\n".join([doc.page_content for doc in docs2])
 
@@ -158,7 +160,7 @@ def remediate_abap_with_validation(input_code: str):
         response = remediate_chain.invoke(
             { 
                 "Rules": rules_text,
-                # "applicable_rules": applicable_rules,
+                "global_variables": global_variables,
                 "example_rules": example_rules_text,
                 "input_code": chunk_code
             },
@@ -173,5 +175,5 @@ def remediate_abap_with_validation(input_code: str):
 # -----------------------------
 @app.post("/remediate_abap/")
 async def remediate_abap(input_data: ABAPCodeInput):
-    return remediate_abap_with_validation(input_data.code)
+    return remediate_abap_with_validation(input_data.code,input_data.global_variables)
 
