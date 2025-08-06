@@ -20,7 +20,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 llm = ChatOpenAI(model="gpt-4.1", temperature=0)
 
 remediate_prompt = PromptTemplate(
-    input_variables=["Rules", "global_variables", "example_rules", "input_code"],
+    input_variables=["Rules",  "example_rules","global_variables", "input_code"],
     template="""
 You are an SAP ABAP Remediation Expert.
 Your task is to fully remediate all forms and subroutines in the ECC ABAP code.
@@ -38,11 +38,13 @@ Apply the following:
 Rules:
 {Rules}
 
-global_variables:
-{global_variables}
+
 
 Example Rules:
 {example_rules}
+
+global_variables:
+{global_variables}
 
 ECC ABAP Code:
 {input_code}
@@ -100,8 +102,8 @@ def remediate_abap_with_validation(input_code: str, global_variables: str, rules
 
         prompt = remediate_prompt.format(
             Rules=rules_text,
-            global_variables=global_variables,
             example_rules=example_rules_text,
+            global_variables=global_variables,
             input_code=chunk_code
         )
 
